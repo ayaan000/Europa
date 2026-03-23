@@ -15,17 +15,20 @@ export function renderOverviewTab(container) {
     <div class="grid-2">
       <div>
         <div class="card" style="margin-bottom: 20px;">
-          <div class="card-title"><span class="icon">🌐</span> 3D Icy Moon Model</div>
-          <div class="three-container" id="globe-container">
+          <div class="card-title"><span class="icon">🌐</span> 3D Interactive Europa Model</div>
+          <div class="three-container" id="globe-container" style="height:500px;">
             <div class="three-overlay">
-              <div class="toggle-group" id="globe-toggle">
-                <button class="toggle-option active" data-mode="surface">Surface Mapping</button>
-                <button class="toggle-option" data-mode="internal">Internal Layers</button>
+              <div class="toggle-group" id="globe-toggle" style="flex-wrap:wrap; max-width:420px;">
+                <button class="toggle-option active" data-mode="surface">Surface</button>
+                <button class="toggle-option" data-mode="internal">Layers</button>
+                <button class="toggle-option" data-mode="convection">Convection</button>
+                <button class="toggle-option" data-mode="magnetic">B-Field</button>
+                <button class="toggle-option" data-mode="tidal">Tidal Stress</button>
               </div>
             </div>
           </div>
           <p style="font-size:11px; color:var(--text-muted); margin-top:8px; text-align:center;">
-            Drag to rotate · Scroll to zoom · Procedural texture inspired by Galileo SSI / Voyager imagery
+            Drag to rotate · Scroll to zoom · 5 visualization modes — click toggles above
           </p>
         </div>
       </div>
