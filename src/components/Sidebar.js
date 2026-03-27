@@ -7,7 +7,7 @@ export function createSidebar(tabs, activeTab, onSwitch) {
   brand.className = 'sidebar-brand';
   brand.innerHTML = `
     <h1>Europa Dashboard</h1>
-    <div class="subtitle">AST320 Research Platform</div>
+    <div class="subtitle">Planetary Science Research</div>
   `;
   sidebar.appendChild(brand);
 
@@ -47,7 +47,7 @@ export function createSidebar(tabs, activeTab, onSwitch) {
   footer.innerHTML = `
     <button class="glossary-btn" onclick="window.__openGlossary()">
       <span class="nav-icon">📖</span>
-      AST320 Glossary
+      Planetary Glossary
     </button>
   `;
   sidebar.appendChild(footer);

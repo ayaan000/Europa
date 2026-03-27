@@ -150,7 +150,7 @@ export function renderClipperTab(container) {
     <div class="section-gap"></div>
 
     <div class="card">
-      <div class="card-title"><span class="icon">🎓</span> AST320 Connection: Remote Sensing & Field Induction</div>
+      <div class="card-title"><span class="icon">🎓</span> Theoretical Framework: Remote Sensing & Field Induction</div>
       <div class="grid-2">
         <div class="context-block" style="margin:0;">
           <h4>Electromagnetic Induction</h4>

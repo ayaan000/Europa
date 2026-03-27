@@ -70,7 +70,7 @@ export function createGlossary() {
   overlay.innerHTML = `
     <div class="modal">
       <button class="modal-close" onclick="document.getElementById('glossary-modal').classList.remove('open')">✕</button>
-      <h3 style="font-family: var(--font-display); font-size: 22px; margin-bottom: 4px;">AST320 Glossary</h3>
+      <h3 style="font-family: var(--font-display); font-size: 22px; margin-bottom: 4px;">Planetary Science Glossary</h3>
       <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 20px;">Key concepts linking planetary dynamics to introductory astrophysics.</p>
       ${entriesHTML}
     </div>

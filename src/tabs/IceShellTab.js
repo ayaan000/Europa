@@ -73,7 +73,7 @@ export function renderIceShellTab(container) {
         </div>
 
         <div class="card">
-          <div class="card-title"><span class="icon">🎓</span> AST320 Connection</div>
+          <div class="card-title"><span class="icon">🎓</span> Theoretical Framework: Internal Dynamics</div>
           <div class="context-block" style="margin:0;">
             <h4>Schwarzschild Criterion in Ice Shells</h4>
             <p>

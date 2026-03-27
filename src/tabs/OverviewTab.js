@@ -99,7 +99,7 @@ export function renderOverviewTab(container) {
 
       <!-- Hydrostatic Equilibrium -->
       <div class="card">
-        <div class="card-title"><span class="icon">⚖️</span> AST320: Hydrostatic Equilibrium</div>
+        <div class="card-title"><span class="icon">⚖️</span> Theoretical Framework: Hydrostatic Equilibrium</div>
         <div class="equation-block" id="eq-hydrostatic"></div>
         <p style="font-size:12px; color:var(--text-secondary); margin-top:12px; line-height:1.5;">
           The weight of overlying material is perfectly balanced by the outward pressure gradient. 

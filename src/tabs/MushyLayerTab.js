@@ -39,6 +39,16 @@ export function renderMushyLayerTab(container) {
           <div class="equation-block" id="eq-mushy"></div>
           <div class="equation-block" id="eq-stefan" style="margin-top:12px;"></div>
         </div>
+
+        <div class="card" style="margin-top:20px;">
+          <div class="card-title"><span class="icon">⚗️</span> Two-Phase Reactive Transport</div>
+          <p style="font-size:13px; color:var(--text-secondary); line-height:1.7;">
+            The mushy layer is a porous medium where solid ice coexists with interstitial liquid brine. 
+            Coupling heat and solute transport reveals that buoyancy-driven convection within the brine channels 
+            is critical for salt rejection.
+          </p>
+          <div class="equation-block" id="eq-brine" style="margin-top:12px;"></div>
+        </div>
       </div>
 
       <!-- Right Column: Controls & Dashboard -->
@@ -110,6 +120,15 @@ export function renderMushyLayerTab(container) {
       'P_{base} = \\rho_{ice} \\cdot g \\cdot d_{ice}',
       { displayMode: true, throwOnError: false }
     )}
+  `;
+
+  document.getElementById('eq-brine').innerHTML = `
+    <div class="equation-label">Darcy-Rayleigh Number ($Ra_{m}$)</div>
+    ${katex.renderToString(
+      'Ra_m = \\frac{\\Delta \\rho g \\Pi H}{\\mu \\kappa}',
+      { displayMode: true, throwOnError: false }
+    )}
+    <div style="font-size:11px; color:var(--text-muted); margin-top:5px;">Governs the onset of convection (salt rejection) in the porous slurry.</div>
   `;
 
   // Bind sliders

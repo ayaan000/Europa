@@ -129,7 +129,7 @@ export function renderAnalyticsTab(container) {
       </div>
 
       <div class="card">
-        <div class="card-title"><span class="icon">🎓</span> AST320 — Bayesian Uncertainty</div>
+        <div class="card-title"><span class="icon">🎓</span> Planetary Inference — Bayesian Uncertainty</div>
         <div class="context-block" style="margin:0; margin-bottom:10px;">
           <h4>Bayesian Parameter Estimation</h4>
           <div class="equation-block" id="eq-bayes" style="margin:8px 0;"></div>

@@ -70,7 +70,7 @@ export function renderOceanTab(container) {
         </div>
         <div>
           <div class="context-block">
-            <h4>🎓 AST320 Connection: Convective Stability</h4>
+            <h4>🎓 Theoretical Framework: Convective Stability</h4>
             <p>
               The Rayleigh number measures whether convection occurs at all: Ra > Ra_critical 
               (≈ 1708 for classical Rayleigh-Bénard). Icy moon oceans exceed this by ~18 orders of 
