@@ -357,16 +357,28 @@ body::after {
   gap: 20px;
 }
 
+.grid-2 > * {
+  min-width: 0;
+}
+
 .grid-3 {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 20px;
 }
 
+.grid-3 > * {
+  min-width: 0;
+}
+
 .grid-auto {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 20px;
+}
+
+.grid-auto > * {
+  min-width: 0;
 }
 
 .full-width {
@@ -419,6 +431,8 @@ body::after {
   padding: 20px 24px;
   margin: 16px 0;
   text-align: center;
+  overflow-x: auto;
+  overflow-y: hidden;
 }
 
 .equation-block .katex {

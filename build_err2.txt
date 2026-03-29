@@ -1,0 +1,29 @@
+
+> europa@0.0.0 build
+> vite build
+
+[36mvite v5.4.21 [32mbuilding for production...[36m[39m
+transforming...
+[32m✓[39m 16 modules transformed.
+[31mx[39m Build failed in 92ms
+[31merror during build:
+[31msrc/tabs/AstrobiologyTab.js (3:7): Identifier "katex" has already been declared[31m
+file: [36mC:/Users/ayaan/OneDrive/Desktop/4th Year/Europa/Europa/src/tabs/AstrobiologyTab.js:3:7[31m
+[33m
+1: import katex from 'katex';
+2: 
+3: import katex from 'katex';
+          ^
+4: 
+5: export function renderAstrobiologyTab(container) {
+[31m
+    at getRollupError (file:///C:/Users/ayaan/OneDrive/Desktop/4th%20Year/Europa/Europa/node_modules/rollup/dist/es/shared/parseAst.js:406:41)
+    at error (file:///C:/Users/ayaan/OneDrive/Desktop/4th%20Year/Europa/Europa/node_modules/rollup/dist/es/shared/parseAst.js:402:42)
+    at Module.error (file:///C:/Users/ayaan/OneDrive/Desktop/4th%20Year/Europa/Europa/node_modules/rollup/dist/es/shared/node-entry.js:17065:16)
+    at Module.addImport (file:///C:/Users/ayaan/OneDrive/Desktop/4th%20Year/Europa/Europa/node_modules/rollup/dist/es/shared/node-entry.js:17592:22)
+    at ImportDeclaration.initialise (file:///C:/Users/ayaan/OneDrive/Desktop/4th%20Year/Europa/Europa/node_modules/rollup/dist/es/shared/node-entry.js:13110:28)
+    at convertNode (file:///C:/Users/ayaan/OneDrive/Desktop/4th%20Year/Europa/Europa/node_modules/rollup/dist/es/shared/node-entry.js:16461:10)
+    at convertNodeList (file:///C:/Users/ayaan/OneDrive/Desktop/4th%20Year/Europa/Europa/node_modules/rollup/dist/es/shared/node-entry.js:16471:38)
+    at Array.program (file:///C:/Users/ayaan/OneDrive/Desktop/4th%20Year/Europa/Europa/node_modules/rollup/dist/es/shared/node-entry.js:16321:21)
+    at convertNode (file:///C:/Users/ayaan/OneDrive/Desktop/4th%20Year/Europa/Europa/node_modules/rollup/dist/es/shared/node-entry.js:16460:28)
+    at convertProgram (file:///C:/Users/ayaan/OneDrive/Desktop/4th%20Year/Europa/Europa/node_modules/rollup/dist/es/shared/node-entry.js:15697:12)[39m

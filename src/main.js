@@ -4,28 +4,26 @@ import { createSidebar } from './components/Sidebar.js';
 import { createGlossary } from './components/Glossary.js';
 import { renderOverviewTab } from './tabs/OverviewTab.js';
 import { renderOceanTab } from './tabs/OceanTab.js';
-import { renderIceShellTab } from './tabs/IceShellTab.js';
-import { renderMushyLayerTab } from './tabs/MushyLayerTab.js';
 import { renderJupiterTab } from './tabs/JupiterTab.js';
 import { renderGeodeticTab } from './tabs/GeodeticTab.js';
-import { renderConvectionTab } from './tabs/ConvectionTab.js';
-import { renderClipperTab } from './tabs/ClipperTab.js';
-import { renderAnalyticsTab } from './tabs/AnalyticsTab.js';
+import { renderIceSystemTab } from './tabs/IceSystemTab.js';
+import { renderCombinedClipperTab } from './tabs/CombinedClipperTab.js';
 import { renderGeologyTab } from './tabs/GeologyTab.js';
 import { renderAstrobiologyTab } from './tabs/AstrobiologyTab.js';
+import { renderPosterTab } from './tabs/PosterTab.js';
+import { renderNasaEyesTab } from './tabs/NasaEyesTab.js';
 
 const TABS = {
   overview:    { render: renderOverviewTab,    label: 'Overview & Constants',          icon: '🌍', section: 'icy' },
   jupiter:     { render: renderJupiterTab,     label: 'Jupiter System & Magneto.',     icon: '🪐', section: 'icy' },
   geology:     { render: renderGeologyTab,     label: 'Surface Mapping & Tectonics',   icon: '🗺️', section: 'icy' },
   ocean:       { render: renderOceanTab,       label: 'Ocean Convection Theory',      icon: '🌊', section: 'icy' },
-  iceshell:    { render: renderIceShellTab,    label: 'Ice Shell Dynamics',            icon: '❄️', section: 'icy' },
-  mushy:       { render: renderMushyLayerTab,  label: 'Ice-Ocean Interface',           icon: '🔬', section: 'icy' },
+  icesystem:   { render: renderIceSystemTab,   label: 'Ice-Ocean System Unit',         icon: '🧊', section: 'icy' },
   astro:       { render: renderAstrobiologyTab,label: 'Astrobiology & Organics',       icon: '🦠', section: 'icy' },
   geodetic:    { render: renderGeodeticTab,    label: 'Steinbrügge et al. 2026',       icon: '📡', section: 'europa' },
-  convection:  { render: renderConvectionTab,  label: 'Pagnoscin et al. 2026',         icon: '🔥', section: 'europa' },
-  clipper:     { render: renderClipperTab,     label: 'Europa Clipper Mission',        icon: '🛰️', section: 'europa' },
-  analytics:   { render: renderAnalyticsTab,   label: 'Clipper Analytics',             icon: '📊', section: 'europa' },
+  clipper:     { render: renderCombinedClipperTab, label: 'Europa Clipper Mission',    icon: '🛰️', section: 'europa' },
+  nasaeyes:    { render: renderNasaEyesTab,    label: 'NASA Eyes Explorer',            icon: '🔭', section: 'europa' },
+  poster:      { render: renderPosterTab,      label: 'Cross Section Poster',          icon: '🖼️', section: 'icy' },
 };
 
 let activeTab = 'overview';

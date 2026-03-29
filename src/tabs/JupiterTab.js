@@ -10,6 +10,14 @@ export function renderJupiterTab(container) {
         Europa's internal heat and chemical makeup are driven entirely by its location within 
         Jupiter's immense gravitational and magnetic fields. 
       </p>
+      <div class="paper-citation" style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">
+        <span style="background:rgba(255,255,255,0.05); padding:4px 8px; border-radius:4px; font-size:10px;">
+          📄 <a href="https://doi.org/10.1007/s11214-025-01250-x" target="_blank" style="color:#00d4ff;">Steinbrügge et al. (2026)</a>
+        </span>
+        <span style="background:rgba(255,255,255,0.05); padding:4px 8px; border-radius:4px; font-size:10px;">
+          📄 <a href="https://doi.org/10.1016/j.icarus.2025.116875" target="_blank" style="color:#ff00ff;">Pagnoscin et al. (2026)</a>
+        </span>
+      </div>
     </div>
 
     <!-- Top Section: Orbits & Resonance -->
@@ -87,7 +95,10 @@ export function renderJupiterTab(container) {
 
   // Render minimal equations
   document.getElementById('eq-laplace').innerHTML = katex.renderToString(
-    'n_{Io} - 3n_{Eu} + 2n_{Ga} = 0, \\quad \\dot{E}_{tidal} \\propto \\frac{e^2}{a^{15/2}}',
+    'n_1 - 3n_2 + 2n_3 = 0',
+    { displayMode: true, throwOnError: false }
+  ) + katex.renderToString(
+    '\\dot{E}_{tidal} = \\frac{21}{2} \\frac{k_2}{Q} \\frac{G M_J^2 R^5 n e^2}{a^6}',
     { displayMode: true, throwOnError: false }
   );
 
@@ -201,11 +212,23 @@ function animateOrbits(getSpeed) {
     // Resonance Highlight Line (Io-Europa ~conjunctions)
     const ioAngle = (2 * Math.PI * timeAggregator) / 1.769;
     const euAngle = (2 * Math.PI * timeAggregator) / 3.551;
-    const diff = Math.abs(((ioAngle - euAngle) % (Math.PI*2) + Math.PI*2) % (Math.PI*2));
-    if (diff < 0.2 || diff > Math.PI*2 - 0.2) {
+    const gaAngle = (2 * Math.PI * timeAggregator) / 7.155;
+    
+    // Io-Europa Conjunction
+    const diff1 = Math.abs(((ioAngle - euAngle) % (Math.PI*2) + Math.PI*2) % (Math.PI*2));
+    if (diff1 < 0.2 || diff1 > Math.PI*2 - 0.2) {
       ctx.beginPath(); 
       ctx.moveTo(cx + 1.0*scale*Math.cos(ioAngle), cy + 1.0*scale*Math.sin(ioAngle));
       ctx.lineTo(cx + 1.59*scale*Math.cos(euAngle), cy + 1.59*scale*Math.sin(euAngle));
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)'; ctx.setLineDash([4, 4]); ctx.stroke(); ctx.setLineDash([]);
+    }
+
+    // Europa-Ganymede Conjunction
+    const diff2 = Math.abs(((euAngle - gaAngle) % (Math.PI*2) + Math.PI*2) % (Math.PI*2));
+    if (diff2 < 0.2 || diff2 > Math.PI*2 - 0.2) {
+      ctx.beginPath(); 
+      ctx.moveTo(cx + 1.59*scale*Math.cos(euAngle), cy + 1.59*scale*Math.sin(euAngle));
+      ctx.lineTo(cx + 2.53*scale*Math.cos(gaAngle), cy + 2.53*scale*Math.sin(gaAngle));
       ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)'; ctx.setLineDash([4, 4]); ctx.stroke(); ctx.setLineDash([]);
     }
   }

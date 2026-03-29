@@ -3,270 +3,237 @@ import katex from 'katex';
 export function renderIceShellTab(container) {
   container.innerHTML = `
     <div class="tab-header">
-      <h2>Ice Shell Dynamics & Regime Switches</h2>
+      <h2>Ice Shell Dynamics: 1D Thermal Gradient</h2>
       <p class="tab-subtitle">
-        Icy moon shells can exist in two distinct thermal states — thin conductive or thick convective — 
-        depending on the balance between tidal heat production and heat loss to space. 
-        The transition between these states may exhibit hysteresis, meaning the system can "jump" 
-        between stable configurations.
+        Explore the non-linear bifurcation between conductive and convective heat transport. Drag the slider to adjust Europa's ice shell thickness to observe the onset of convective instability.
       </p>
     </div>
 
     <div class="grid-2">
+      <!-- Left: Interactive Controls -->
       <div class="card">
-        <div class="card-title"><span class="icon">🔄</span> Hysteresis Toggle: Shell Regime</div>
-        <div class="toggle-group" id="shell-toggle" style="margin-bottom:20px;">
-          <button class="toggle-option active" data-mode="thin">Thin Conductive (~10 km)</button>
-          <button class="toggle-option" data-mode="thick">Thick Convective (~30 km)</button>
-        </div>
-        <div class="canvas-container" style="height:340px;">
-          <canvas id="shell-canvas"></canvas>
-        </div>
-        <div id="shell-description" style="margin-top:14px;"></div>
-      </div>
-
-      <div>
-        <div class="card" style="margin-bottom:20px;">
-          <div class="card-title"><span class="icon">📐</span> Heat Transport Equation</div>
-          <div class="equation-block" id="eq-heat"></div>
-          <div class="equation-block" id="eq-nusselt"></div>
+        <div class="card-title"><span class="icon">🎛️</span> Shell Parameter Control</div>
+        
+        <div class="slider-container" style="margin:20px 0;">
+          <label>Shell Thickness ($d$) <span class="slider-value" id="val-thick" style="color:var(--accent-primary)">15 km</span></label>
+          <input type="range" id="slider-thick" min="5" max="60" value="15" step="1" />
         </div>
 
-        <div class="card" style="margin-bottom:20px;">
-          <div class="card-title"><span class="icon">📊</span> Regime Comparison</div>
-          <table style="width:100%; font-size:13px; color:var(--text-secondary); border-collapse:collapse;">
-            <thead>
-              <tr style="border-bottom:1px solid var(--border-subtle);">
-                <th style="text-align:left; padding:8px; color:var(--text-muted); font-size:11px; text-transform:uppercase; letter-spacing:1px;">Property</th>
-                <th style="text-align:center; padding:8px; color:var(--accent-primary);">Conductive</th>
-                <th style="text-align:center; padding:8px; color:var(--accent-warm);">Convective</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr style="border-bottom:1px solid var(--border-subtle);">
-                <td style="padding:8px;">Thickness</td>
-                <td style="text-align:center; padding:8px;">~5–15 km</td>
-                <td style="text-align:center; padding:8px;">~25–40 km</td>
-              </tr>
-              <tr style="border-bottom:1px solid var(--border-subtle);">
-                <td style="padding:8px;">Heat transport</td>
-                <td style="text-align:center; padding:8px;">Conduction only</td>
-                <td style="text-align:center; padding:8px;">Conduction + convection</td>
-              </tr>
-              <tr style="border-bottom:1px solid var(--border-subtle);">
-                <td style="padding:8px;">Nusselt number</td>
-                <td style="text-align:center; padding:8px;">Nu = 1</td>
-                <td style="text-align:center; padding:8px;">Nu ≫ 1</td>
-              </tr>
-              <tr style="border-bottom:1px solid var(--border-subtle);">
-                <td style="padding:8px;">Surface features</td>
-                <td style="text-align:center; padding:8px;">Smooth ridges</td>
-                <td style="text-align:center; padding:8px;">Chaos terrain</td>
-              </tr>
-              <tr>
-                <td style="padding:8px;">Schwarzschild</td>
-                <td style="text-align:center; padding:8px;">Sub-adiabatic</td>
-                <td style="text-align:center; padding:8px;">Super-adiabatic</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <div class="card">
-          <div class="card-title"><span class="icon">🎓</span> Theoretical Framework: Internal Dynamics</div>
-          <div class="context-block" style="margin:0;">
-            <h4>Schwarzschild Criterion in Ice Shells</h4>
-            <p>
-              The Schwarzschild criterion from stellar interiors applies directly: when the 
-              conductive temperature gradient exceeds the adiabatic gradient, convection onsets. 
-              In an ice shell, the conductive gradient steepens as the shell thickens 
-              (∝ ΔT/d), but the adiabatic gradient is nearly fixed. Beyond a critical thickness 
-              (~15 km for Europa-like conditions), convection kicks in and the shell transitions 
-              to the thick convective regime. This is a "finite-amplitude" bifurcation — the shell 
-              doesn't smoothly transition but jumps.
-            </p>
+        <div class="data-grid" style="margin-bottom:20px;">
+          <div class="data-item">
+            <div class="label">Dominant Regime</div>
+            <div class="value" id="out-regime" style="color:var(--accent-secondary); font-size:16px;">Conductive</div>
+          </div>
+          <div class="data-item">
+            <div class="label">Nusselt Number ($Nu$)</div>
+            <div class="value" id="out-nu">1.0</div>
+          </div>
+          <div class="data-item">
+            <div class="label">Basal Heat Flux</div>
+            <div class="value" id="out-flux">-- <span class="unit">mW/m²</span></div>
           </div>
         </div>
+
+        <div id="regime-desc" style="font-size:13px; color:var(--text-secondary); line-height:1.6; border-left:3px solid var(--accent-primary); padding-left:15px; margin-top:20px;">
+        </div>
+      </div>
+
+      <!-- Right: Equations -->
+      <div>
+        <div class="card" style="margin-bottom:20px;">
+          <div class="card-title"><span class="icon">📐</span> Heat Transport Physics</div>
+          <p style="font-size:13px; color:var(--text-secondary); margin-bottom:15px;">When the conductive temperature gradient steepens sufficiently to overcome viscous resistance, the solid ice undergoes solid-state convection.</p>
+          <div class="equation-block" id="eq-fourier" style="margin-bottom:15px;"></div>
+          <div class="equation-block" id="eq-schwarzschild"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Canvas Visualization -->
+    <div class="card" style="margin-top:20px;">
+      <div class="card-title"><span class="icon">📊</span> Interactive T-z Thermal Profile</div>
+      <div class="canvas-container" style="height:350px; border:1px solid rgba(255,255,255,0.05); border-radius:8px; overflow:hidden;">
+        <canvas id="thermal-canvas"></canvas>
       </div>
     </div>
   `;
 
-  // Render equations
-  document.getElementById('eq-heat').innerHTML = `
-    <div class="equation-label">Fourier's Law (Conductive Heat Flux)</div>
-    ${katex.renderToString('q_{\\text{cond}} = -k\\,\\frac{dT}{dz} \\approx k\\,\\frac{T_m - T_s}{d}', { displayMode: true, throwOnError: false })}
-    <div class="equation-explanation">k = thermal conductivity of ice (~2.3 W/m·K), T_m = melting point (~273 K), T_s = surface temp (~100 K), d = shell thickness.</div>
+  document.getElementById('eq-fourier').innerHTML = `
+    <div class="equation-label" style="margin-bottom:5px; color:var(--text-muted)">Fourier's Law (Conductive Base Flux)</div>
+    ${katex.renderToString('q = k \\frac{\\Delta T}{d} \\cdot Nu', { displayMode: true, throwOnError: false })}
   `;
 
-  document.getElementById('eq-nusselt').innerHTML = `
-    <div class="equation-label">Nusselt Number (Convective Enhancement)</div>
-    ${katex.renderToString('Nu = \\frac{q_{\\text{total}}}{q_{\\text{cond}}}', { displayMode: true, throwOnError: false })}
-    <div class="equation-explanation">Nu = 1 for purely conductive shells. Nu ≫ 1 when vigorous convection enhances heat transport beyond conduction alone.</div>
+  document.getElementById('eq-schwarzschild').innerHTML = `
+    <div class="equation-label" style="margin-bottom:5px; color:var(--text-muted)">Critical Convection Thickness ($d_c$)</div>
+    ${katex.renderToString('d_c \\approx \\left( \\frac{Ra_c \\kappa \\eta}{\\alpha g \\rho \\Delta T} \\right)^{1/3} \\approx 22 \\text{ km}', { displayMode: true, throwOnError: false })}
   `;
 
-  // Shell mode
-  let currentMode = 'thin';
-  drawShell(currentMode);
-  updateDescription(currentMode);
+  const slider = document.getElementById('slider-thick');
+  const outRegime = document.getElementById('out-regime');
+  const outNu = document.getElementById('out-nu');
+  const outFlux = document.getElementById('out-flux');
+  const desc = document.getElementById('regime-desc');
+  const canvas = document.getElementById('thermal-canvas');
 
-  document.getElementById('shell-toggle').addEventListener('click', (e) => {
-    const btn = e.target.closest('.toggle-option');
-    if (!btn) return;
-    document.querySelectorAll('#shell-toggle .toggle-option').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    currentMode = btn.dataset.mode;
-    drawShell(currentMode);
-    updateDescription(currentMode);
-  });
-}
+  function update() {
+    const d = parseFloat(slider.value); // km
+    document.getElementById('val-thick').textContent = d + ' km';
 
-function updateDescription(mode) {
-  const el = document.getElementById('shell-description');
-  if (mode === 'thin') {
-    el.innerHTML = `
-      <div class="context-block" style="border-color: rgba(0, 212, 255, 0.3);">
-        <h4 style="color: var(--accent-primary);">Thin Conductive Shell (~10 km)</h4>
-        <p>Heat is transported purely by conduction. The shell is thin enough that the temperature 
-        gradient remains sub-adiabatic (Schwarzschild stability). Surface features are dominated by 
-        tectonic ridges and lineae. The ocean is relatively close to the surface.</p>
-      </div>
-    `;
-  } else {
-    el.innerHTML = `
-      <div class="context-block" style="border-color: rgba(255, 107, 107, 0.3);">
-        <h4 style="color: var(--accent-warm);">Thick Convective Shell (~30 km)</h4>
-        <p>The shell is thick enough for the temperature gradient to exceed the adiabatic gradient, 
-        triggering solid-state convection (warm ice rising, cold ice sinking). This produces <strong>chaos 
-        terrain</strong> — disrupted blocks of ice tilted at odd angles, formed when warm diapirs 
-        partially melt through the shell. The "finite-amplitude jump" in heat flux occurs because 
-        convection suddenly becomes the dominant transport mechanism.</p>
-      </div>
-    `;
+    // Physics
+    const k = 2.3; // W/mK for ice at roughly 200K
+    const dT = 270 - 100; // Ocean - Surface
+    const CRITICAL_THICK = 22; // km
+    
+    let isConvective = d > CRITICAL_THICK;
+    let Nu = 1.0;
+    
+    if (isConvective) {
+      // Strongly sub-critical parameterization for demonstration purposes
+      Nu = 1.0 + Math.pow((d - CRITICAL_THICK) / 8, 1.3); 
+    }
+
+    const q = (k * dT) / (d * 1000) * Nu; // W/m^2
+    const heatFlux_mW = (q * 1000).toFixed(1);
+
+    outNu.textContent = Nu.toFixed(2);
+    outFlux.textContent = heatFlux_mW + ' mW/m²';
+
+    if (!isConvective) {
+      outRegime.textContent = 'Stagnant Conductive Lid';
+      outRegime.style.color = '#00ffff';
+      outRegime.style.textShadow = '0 0 10px rgba(0,255,255,0.4)';
+      desc.innerHTML = `<strong>Thin Shell Regime:</strong> Heat is transported purely by solid-state conduction. The temperature gradient is linear (sub-adiabatic). This shell is structurally rigid but can support global tectonic fractures.`;
+      desc.style.borderColor = '#00ffff';
+    } else {
+      outRegime.textContent = 'Solid-State Convection';
+      outRegime.style.color = '#ff00ff';
+      outRegime.style.textShadow = '0 0 10px rgba(255,0,255,0.4)';
+      desc.innerHTML = `<strong>Thick Shell Regime:</strong> The shell is thick enough that the conductive profile exceeds the adiabatic limit. The ice destabilizes into convective plumes. The interior becomes nearly isothermal, bounded by sharp thermal boundary layers (TBLs).`;
+      desc.style.borderColor = '#ff00ff';
+    }
+
+    drawThermalProfile(canvas, d, isConvective, Nu);
   }
+
+  slider.addEventListener('input', update);
+  window.addEventListener('resize', update);
+  setTimeout(update, 50);
 }
 
-function drawShell(mode) {
-  const canvas = document.getElementById('shell-canvas');
+function drawThermalProfile(canvas, d, isConvective, Nu) {
   if (!canvas) return;
   const rect = canvas.parentElement.getBoundingClientRect();
   canvas.width = rect.width * 2;
-  canvas.height = 340 * 2;
+  canvas.height = rect.height * 2;
   canvas.style.width = rect.width + 'px';
-  canvas.style.height = '340px';
+  canvas.style.height = rect.height + 'px';
   const ctx = canvas.getContext('2d');
   ctx.scale(2, 2);
 
   const W = rect.width;
-  const H = 340;
+  const H = rect.height;
 
-  // Background
-  ctx.fillStyle = '#060a14';
+  // Clear background
+  ctx.fillStyle = '#110022'; // Deep synthwave void
   ctx.fillRect(0, 0, W, H);
 
-  // Ocean (bottom)
-  const oceanTop = mode === 'thin' ? 80 : 180;
+  // Depth mapping (max slider is 60km, use 70km as total Y axis to leave breathing room)
+  const MAX_DEPTH = 70;
+  const depthScale = H / MAX_DEPTH; 
+  const iceBottomY = d * depthScale;
 
-  const oceanGrad = ctx.createLinearGradient(0, oceanTop, 0, H);
-  oceanGrad.addColorStop(0, '#0a3d6b');
-  oceanGrad.addColorStop(1, '#051e36');
+  // Split View: Left 25% is Ice graphics, Right 75% is Graph
+  const splitX = W * 0.25;
+  
+  // Ocean Graphics
+  const oceanGrad = ctx.createLinearGradient(0, iceBottomY, 0, H);
+  oceanGrad.addColorStop(0, '#0055ff');
+  oceanGrad.addColorStop(1, '#001133');
   ctx.fillStyle = oceanGrad;
-  ctx.fillRect(0, oceanTop, W, H - oceanTop);
+  ctx.fillRect(0, iceBottomY, splitX, H - iceBottomY);
 
-  // Ice shell
-  const iceGrad = ctx.createLinearGradient(0, 0, 0, oceanTop);
-  iceGrad.addColorStop(0, '#d0e8f0');
-  iceGrad.addColorStop(0.3, '#a0c8d8');
-  iceGrad.addColorStop(1, '#4a8aaa');
+  // Ice Shell Graphics
+  const iceGrad = ctx.createLinearGradient(0, 0, 0, iceBottomY);
+  iceGrad.addColorStop(0, '#d0f0ff');
+  iceGrad.addColorStop(1, '#206080');
   ctx.fillStyle = iceGrad;
-  ctx.fillRect(0, 0, W, oceanTop);
+  ctx.fillRect(0, 0, splitX, iceBottomY);
 
-  // Labels
-  ctx.font = '12px "JetBrains Mono", monospace';
-  ctx.fillStyle = '#2a4a5a';
-  ctx.fillText(`ICE SHELL (~${mode === 'thin' ? '10' : '30'} km)`, 12, oceanTop / 2);
-
-  ctx.fillStyle = 'rgba(100, 200, 255, 0.7)';
-  ctx.fillText('SUBSURFACE OCEAN', 12, oceanTop + 30);
-
-  // Ice-ocean boundary line
-  ctx.beginPath();
-  ctx.strokeStyle = 'rgba(0, 212, 255, 0.6)';
-  ctx.lineWidth = 2;
-  ctx.setLineDash([6, 4]);
-  ctx.moveTo(0, oceanTop);
-  ctx.lineTo(W, oceanTop);
-  ctx.stroke();
-  ctx.setLineDash([]);
-
-  // Thickness annotation
-  ctx.beginPath();
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+  // Divider Line
+  ctx.strokeStyle = '#ffffff';
   ctx.lineWidth = 1;
-  ctx.moveTo(W - 30, 5);
-  ctx.lineTo(W - 30, oceanTop - 5);
-  ctx.stroke();
-  ctx.moveTo(W - 35, 5);
-  ctx.lineTo(W - 25, 5);
-  ctx.stroke();
-  ctx.moveTo(W - 35, oceanTop - 5);
-  ctx.lineTo(W - 25, oceanTop - 5);
+  ctx.beginPath();
+  ctx.moveTo(splitX, 0); ctx.lineTo(splitX, H);
   ctx.stroke();
 
-  ctx.font = '10px "JetBrains Mono", monospace';
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
-  ctx.save();
-  ctx.translate(W - 18, oceanTop / 2 + 10);
-  ctx.rotate(-Math.PI / 2);
-  ctx.fillText(`~${mode === 'thin' ? '10' : '30'} km`, 0, 0);
-  ctx.restore();
-
-  // Convective features in thick mode
-  if (mode === 'thick') {
-    // Convection cells in ice
-    for (let i = 0; i < 5; i++) {
-      const cx = W * (i + 0.5) / 5;
-      const isUp = i % 2 === 0;
-      ctx.beginPath();
-      ctx.strokeStyle = isUp ? 'rgba(255, 100, 60, 0.25)' : 'rgba(100, 180, 220, 0.25)';
-      ctx.lineWidth = 3;
-
-      if (isUp) {
-        drawArrow(ctx, cx, oceanTop - 20, cx, 30);
-      } else {
-        drawArrow(ctx, cx, 30, cx, oceanTop - 20);
-      }
-    }
-
-    // Chaos terrain on surface
-    ctx.fillStyle = 'rgba(80, 50, 30, 0.4)';
-    for (let i = 0; i < 8; i++) {
-      const bx = 30 + Math.random() * (W - 60);
-      const bw = 15 + Math.random() * 30;
-      const bh = 5 + Math.random() * 10;
-      ctx.save();
-      ctx.translate(bx, 3 + Math.random() * 8);
-      ctx.rotate((Math.random() - 0.5) * 0.3);
-      ctx.fillRect(-bw / 2, -bh / 2, bw, bh);
-      ctx.restore();
-    }
-
-    ctx.font = '10px "Inter", sans-serif';
-    ctx.fillStyle = 'rgba(255, 120, 80, 0.7)';
-    ctx.fillText('↑ CHAOS TERRAIN', W / 2 - 50, 16);
+  // Draw Grid Lines on Graph
+  const graphX = splitX + 20;
+  const graphW = W - graphX - 20;
+  ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+  ctx.font = '10px monospace';
+  ctx.fillStyle = 'rgba(255,255,255,0.4)';
+  
+  // Depth guides
+  for(let z=10; z<=60; z+=10) {
+    const y = z * depthScale;
+    ctx.beginPath(); ctx.moveTo(graphX, y); ctx.lineTo(W, y); ctx.stroke();
+    ctx.fillText(z + 'km', graphX - 30, y + 4);
   }
-}
 
-function drawArrow(ctx, x1, y1, x2, y2) {
+  // T bounds (100K -> 270K)
+  const T_min = 90;
+  const T_max = 280;
+  const mapT = (T) => graphX + ((T - T_min) / (T_max - T_min)) * graphW;
+
+  // Temp guides
+  for(let T=100; T<=270; T+=30) {
+    const x = mapT(T);
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+    ctx.fillText(T + 'K', x - 10, H - 5);
+  }
+
+  // Plot profile
   ctx.beginPath();
-  ctx.moveTo(x1, y1);
-  ctx.lineTo(x2, y2);
+  ctx.strokeStyle = isConvective ? '#ff00ff' : '#00ffff';
+  ctx.lineWidth = 4;
+
+  ctx.moveTo(mapT(100), 0); // Surface temp
+  
+  if (!isConvective) {
+    // Linear conductive profile
+    ctx.lineTo(mapT(270), iceBottomY);
+  } else {
+    // Convective profile: Stagnant lid, isothermal interior, bottom thermal boundary layer (TBL)
+    const TBL_thickness = d / (2 * Nu); 
+    const topBdY = TBL_thickness * depthScale;
+    const botBdY = (d - TBL_thickness) * depthScale;
+    const interiorTemp = 240; 
+    
+    // Smooth bezier curve approximations for natural looking boundary layers
+    ctx.bezierCurveTo(
+      mapT(100), topBdY - topBdY*0.5, // control point 1
+      mapT(interiorTemp), topBdY*0.5,   // control point 2
+      mapT(interiorTemp), topBdY        // end point (base of conductive lid)
+    );
+    // Isothermal convection core
+    ctx.lineTo(mapT(interiorTemp + 5), botBdY);
+    // Bottom boundary layer
+    ctx.bezierCurveTo(
+      mapT(interiorTemp + 5), botBdY + TBL_thickness*0.5, 
+      mapT(270), iceBottomY - TBL_thickness*0.5,
+      mapT(270), iceBottomY
+    );
+  }
+
+  ctx.shadowColor = isConvective ? 'rgba(255,0,255,0.8)' : 'rgba(0,255,255,0.8)';
+  ctx.shadowBlur = 12;
   ctx.stroke();
-  // arrowhead
-  const angle = Math.atan2(y2 - y1, x2 - x1);
-  ctx.beginPath();
-  ctx.moveTo(x2, y2);
-  ctx.lineTo(x2 - 8 * Math.cos(angle - 0.4), y2 - 8 * Math.sin(angle - 0.4));
-  ctx.moveTo(x2, y2);
-  ctx.lineTo(x2 - 8 * Math.cos(angle + 0.4), y2 - 8 * Math.sin(angle + 0.4));
-  ctx.stroke();
+  ctx.shadowBlur = 0;
+
+  // Ice-Ocean interface Line
+  ctx.strokeStyle = '#ff0055';
+  ctx.lineWidth = 2;
+  ctx.setLineDash([5, 5]);
+  ctx.beginPath(); ctx.moveTo(graphX, iceBottomY); ctx.lineTo(W, iceBottomY); ctx.stroke();
+  ctx.setLineDash([]);
 }

@@ -6,23 +6,45 @@ export function renderOverviewTab(container) {
   const modeContexts = {
     surface: {
       title: "Surface Mapping",
-      text: "Europa's surface is one of the smoothest in the solar system, composed mostly of water ice. The red-brown streaks are 'lineae' — cracks in the ice filled with salts (like magnesium sulfate) irradiated by Jupiter's magnetic field."
+      text: "Europa's surface is one of the smoothest in the solar system, composed mostly of water ice. The red-brown streaks are 'lineae' — cracks in the ice filled with salts (like magnesium sulfate) irradiated by Jupiter's magnetic field.",
+      physicsTitle: "Ice Shell Stress Analysis",
+      physicsDesc: "Tidal and rotational stresses dictate the geometry of surface fracturing. The principal tensile stress generates propagating cycloidal cracks.",
+      equation: "\\sigma_{tidal} = \\frac{3}{2} \\mu \\left( \\frac{R}{a} \\right)^3 e"
     },
     internal: {
       title: "Internal Layering",
-      text: "Like Earth, Europa is fully differentiated. A metallic iron core is surrounded by a silicate rock mantle, topped by a global liquid water ocean (60-150 km deep), and sealed beneath an outer shell of solid ice."
+      text: "Like Earth, Europa is fully differentiated. A metallic iron core is surrounded by a silicate rock mantle, topped by a global liquid water ocean (60-150 km deep), and sealed beneath an outer shell of solid ice.",
+      physicsTitle: "Hydrostatic Pressure Gradient",
+      physicsDesc: "The internal structure is maintained by hydrostatic equilibrium, balancing gravitational compression against the material's bulk modulus.",
+      equation: "\\frac{dP}{dr} = -\\rho(r) g(r)"
     },
     convection: {
       title: "Ocean Convection",
-      text: "Heat escaping from the silicate mantle drives hydrothermal plumes up through the ocean. These turbulent convective currents apply concentrated heat fluxes to the base of the ice shell, potentially thinning it over geological time."
+      text: "Heat escaping from the silicate mantle drives hydrothermal plumes up through the ocean. These turbulent convective currents apply concentrated heat fluxes to the base of the ice shell, potentially thinning it over geological time.",
+      physicsTitle: "Rayleigh Number Criterion",
+      physicsDesc: "Convection initiates when the critical Rayleigh number is exceeded, balancing thermal buoyancy against viscous drag and heat diffusion.",
+      equation: "Ra = \\frac{\\alpha g \\Delta T h^3}{\\kappa \\nu} \\sim 10^{20} \\gg Ra_c"
     },
     magnetic: {
       title: "Induced Magnetic Field",
-      text: "As Jupiter's powerful, rotating magnetic field sweeps past Europa, it induces electrical currents within the moon. The fact that an induced counter-field exists is our strongest evidence for a global, conductive, salty ocean."
+      text: "As Jupiter's powerful, rotating magnetic field sweeps past Europa, it induces electrical currents within the moon. The fact that an induced counter-field exists is our strongest evidence for a global, conductive, salty ocean.",
+      physicsTitle: "Magnetic Induction & Skin Depth",
+      physicsDesc: "The time-varying Jovian field penetrates the ocean, inducing opposed eddy currents. The skin depth δ dictates how deep the field penetrates the conductive fluid.",
+      equation: "\\delta = \\sqrt{\\frac{2}{\\mu_0 \\sigma \\omega}} \\approx 100 \\text{ km}"
     },
     tidal: {
       title: "Tidal Stress",
-      text: "Europa's eccentric orbit causes varying gravitational pulls from Jupiter. This tidal flexing generates immense frictional heat within the interior and stresses the ice shell, fracturing it into the chaotic terrain we observe."
+      text: "Europa's eccentric orbit causes varying gravitational pulls from Jupiter. This tidal flexing generates immense frictional heat within the interior and stresses the ice shell, fracturing it into the chaotic terrain we observe. Note the gravity arrows pointing towards the Jovian bodies.",
+      physicsTitle: "Tidal Heating Rate",
+      physicsDesc: "The power dissipated by tidal friction is heavily dependent on eccentricity e and semi-major axis a. This heating sustains the liquid ocean.",
+      equation: "\\dot{E}_{tidal} = \\frac{21}{2} \\frac{k_2}{Q} \\frac{G M_J^2 R^5 n e^2}{a^6}"
+    },
+    mineral: {
+      title: "Resource & Mineral Concentration",
+      text: "Spectroscopic data hints at non-ice materials on the surface. Yellow indicates hydrated salts (magnesium sulfate) bubbling up from the ocean. Magenta traces exogenic sulfuric acid from Io's plasma torus on the trailing hemisphere. Cyan marks theoretical trace organics.",
+      physicsTitle: "Radiolytic Processing",
+      physicsDesc: "Energetic electrons and ions from Jupiter bombard the surface ice, dissociating water molecules into reactive oxidants that can eventually mix into the ocean.",
+      equation: "H_2O \\xrightarrow{e^-, \\, \\gamma} \\text{Radiolytic Products} \\, (O_2, H_2O_2)"
     }
   };
 
@@ -39,14 +61,28 @@ export function renderOverviewTab(container) {
     <div class="grid-2">
       <div class="card" style="margin-bottom: 20px;">
         <div class="card-title"><span class="icon">🌐</span> 3D Interactive Europa Model</div>
-        <div class="three-container" id="globe-container" style="height:400px; position:relative;">
-          <div class="three-overlay" style="top:10px; left:10px; right:10px;">
-            <div class="toggle-group" id="globe-toggle" style="justify-content:center; flex-wrap:wrap; background:rgba(0,0,0,0.5); backdrop-filter:blur(4px); padding:4px; border-radius:8px;">
+        <div class="three-container" id="globe-container" style="height:550px; position:relative;">
+          <div class="three-overlay" style="top:10px; left:10px; right:10px; display:flex; justify-content:space-between; align-items:flex-start;">
+            <div class="toggle-group" id="globe-toggle" style="flex-wrap:wrap; background:rgba(0,0,0,0.5); backdrop-filter:blur(4px); padding:4px; border-radius:8px; max-width:60%;">
               <button class="toggle-option active" data-mode="surface">Surface</button>
               <button class="toggle-option" data-mode="internal">Layers</button>
               <button class="toggle-option" data-mode="convection">Convection</button>
               <button class="toggle-option" data-mode="magnetic">B-Field</button>
               <button class="toggle-option" data-mode="tidal">Tidal Stress</button>
+              <button class="toggle-option" data-mode="mineral">Mineral Map</button>
+            </div>
+            
+            <div style="display:flex; flex-direction:column; gap:8px;">
+              <select id="color-filter" style="background:rgba(0,0,0,0.5); color:var(--text-primary); border:1px solid rgba(255,255,255,0.2); border-radius:6px; padding:6px 10px; font-family:'Space Mono', monospace; font-size:11px; cursor:pointer; backdrop-filter:blur(4px); outline:none;">
+                <option value="truecolor">True Color (Default)</option>
+                <option value="synthwave">Retro Synthwave</option>
+                <option value="infrared">Infrared Thermal</option>
+              </select>
+
+              <div style="display:flex; flex-direction:column; gap:4px; background:rgba(0,0,0,0.5); backdrop-filter:blur(4px); padding:6px 10px; border-radius:6px; border:1px solid rgba(255,255,255,0.2);">
+                <label style="color:var(--text-secondary); font-size:10px; font-family:var(--font-mono); text-transform:uppercase;">Simulation Speed <span id="val-speed" style="color:var(--text-primary); float:right;">1.0x</span></label>
+                <input type="range" id="sim-speed" min="0" max="5" step="0.5" value="1.0" style="width:120px;" />
+              </div>
             </div>
           </div>
         </div>
@@ -65,26 +101,12 @@ export function renderOverviewTab(container) {
           </p>
         </div>
         
-        <div style="border-top:1px solid var(--border-subtle); margin-top:15px; padding-top:15px;">
-          <div class="card-title" style="font-size:12px;"><span class="icon">☀️</span> System Albedo & Reflectivity</div>
-          <p style="font-size:11px; color:var(--text-muted); margin-bottom:10px;">
-            Bond Albedo ($\\alpha$) measures the fraction of incident electromagnetic radiation reflected by a body. 
-            Europa's fresh ice makes it one of the brightest objects in the solar system.
+        <div id="mode-physics-container" style="border-top:1px solid var(--border-subtle); margin-top:15px; padding-top:15px;">
+          <div class="card-title" style="font-size:12px;" id="physics-title"><span class="icon">⚛️</span> ${modeContexts.surface.physicsTitle}</div>
+          <p style="font-size:11px; color:var(--text-muted); margin-bottom:10px;" id="physics-desc">
+            ${modeContexts.surface.physicsDesc}
           </p>
-          
-          <!-- Interactive Albedo visualization -->
-          <div style="position:relative; height:24px; background:linear-gradient(to right, #000000, #444, #888, #ccc, #ffffff); border-radius:12px; margin-top:15px;">
-            <div style="position:absolute; left: 12%; top:-20px; font-size:10px; text-align:center; transform:translateX(-50%); color:#888;">Moon<br>0.12</div>
-            <div style="position:absolute; left: 12%; top:0; height:100%; width:2px; background:#fff; opacity:0.3;"></div>
-
-            <div style="position:absolute; left: 30%; top:28px; font-size:10px; text-align:center; transform:translateX(-50%); color:#888;">Earth<br>0.30</div>
-            <div style="position:absolute; left: 30%; top:0; height:100%; width:2px; background:#fff; opacity:0.3;"></div>
-
-            <div style="position:absolute; left: 67%; top:-25px; font-size:11px; text-align:center; transform:translateX(-50%); color:#00d4ff; font-weight:bold;">Europa<br>0.67</div>
-            <div style="position:absolute; left: 67%; top:0; height:100%; width:3px; background:#00d4ff; box-shadow:0 0 8px #00d4ff;"></div>
-
-            <div style="position:absolute; left: 81%; top:28px; font-size:10px; text-align:center; transform:translateX(-50%); color:#888;">Enceladus<br>0.81</div>
-            <div style="position:absolute; left: 81%; top:0; height:100%; width:2px; background:#fff; opacity:0.3;"></div>
+          <div class="equation-block" id="physics-equation" style="font-size:14px; padding:10px; min-height:60px; display:flex; align-items:center; justify-content:center;">
           </div>
         </div>
       </div>
@@ -142,6 +164,11 @@ export function renderOverviewTab(container) {
   const titleEl = document.getElementById('mode-title');
   const textEl = document.getElementById('mode-text');
 
+  // Initial physics render
+  document.getElementById('physics-equation').innerHTML = katex.renderToString(
+    modeContexts.surface.equation, { displayMode: true, throwOnError: false }
+  );
+
   toggleGroup.addEventListener('click', (e) => {
     const btn = e.target.closest('.toggle-option');
     if (!btn) return;
@@ -157,6 +184,26 @@ export function renderOverviewTab(container) {
     // Update context text
     titleEl.textContent = modeContexts[mode].title;
     textEl.textContent = modeContexts[mode].text;
+    
+    // Update dynamic physics panel
+    document.getElementById('physics-title').innerHTML = '<span class="icon">⚛️</span> ' + modeContexts[mode].physicsTitle;
+    document.getElementById('physics-desc').textContent = modeContexts[mode].physicsDesc;
+    document.getElementById('physics-equation').innerHTML = katex.renderToString(
+      modeContexts[mode].equation, { displayMode: true, throwOnError: false }
+    );
+  });
+
+  const filterSelect = document.getElementById('color-filter');
+  filterSelect.addEventListener('change', (e) => {
+    if (globe.setFilter) globe.setFilter(e.target.value);
+  });
+
+  const speedSlider = document.getElementById('sim-speed');
+  const speedVal = document.getElementById('val-speed');
+  speedSlider.addEventListener('input', (e) => {
+    const val = parseFloat(e.target.value);
+    speedVal.textContent = val.toFixed(1) + 'x';
+    if (globe.setTimeMultiplier) globe.setTimeMultiplier(val);
   });
 
   return () => globe.dispose();
