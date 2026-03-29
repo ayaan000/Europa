@@ -9,12 +9,7 @@ export function renderPosterTab(container) {
 
     <!-- PDF Viewer -->
     <div class="card" style="height: calc(100vh - 200px); padding: 0; overflow: hidden; border: 1px solid rgba(0,255,255,0.2);">
-      <object data="/EuropaPoster.pdf" type="application/pdf" width="100%" height="100%" style="border: none;">
-        <div style="padding: 40px; text-align: center; color: var(--text-secondary);">
-          <p>Your browser doesn't support embedded PDFs natively.</p>
-          <a href="/EuropaPoster.pdf" target="_blank" style="color: var(--accent-primary); text-decoration: underline; font-weight: bold;">Click here to open the Europa Poster directly</a>
-        </div>
-      </object>
+      <iframe src="/EuropaPoster.pdf" width="100%" height="100%" style="border: none;"></iframe>
     </div>
   `;
 }
