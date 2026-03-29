@@ -11,14 +11,18 @@ import { renderGeologyTab } from './tabs/GeologyTab.js';
 import { renderAstrobiologyTab } from './tabs/AstrobiologyTab.js';
 import { renderPosterTab } from './tabs/PosterTab.js';
 import { renderNasaEyesTab } from './tabs/NasaEyesTab.js';
+import { renderSotinGeodesicTab } from './tabs/SotinGeodesicTab.js';
+import { renderAst320ConvectionTab } from './tabs/Ast320ConvectionTab.js';
 
 const TABS = {
   overview:    { render: renderOverviewTab,    label: 'Overview & Constants',          icon: '🌍', section: 'icy' },
   jupiter:     { render: renderJupiterTab,     label: 'Jupiter System & Magneto.',     icon: '🪐', section: 'icy' },
   geology:     { render: renderGeologyTab,     label: 'Surface Mapping & Tectonics',   icon: '🗺️', section: 'icy' },
   icesystem:   { render: renderIceSystemTab,   label: 'Ice-Ocean System Unit',         icon: '🧊', section: 'icy' },
+  ast320:      { render: renderAst320ConvectionTab,label: 'Ocean Convection (Pappalardo)',icon: '🌊', section: 'icy' },
   astro:       { render: renderAstrobiologyTab,label: 'Astrobiology & Organics',       icon: '🦠', section: 'icy' },
   geodetic:    { render: renderGeodeticTab,    label: 'Steinbrügge et al. 2026',       icon: '📡', section: 'europa' },
+  sotin:       { render: renderSotinGeodesicTab,label: 'Sotin et al. 2026',            icon: '🎯', section: 'europa' },
   clipper:     { render: renderCombinedClipperTab, label: 'Europa Clipper Mission',    icon: '🛰️', section: 'europa' },
   nasaeyes:    { render: renderNasaEyesTab,    label: 'NASA Eyes Explorer',            icon: '🔭', section: 'europa' },
   poster:      { render: renderPosterTab,      label: 'Cross Section Poster',          icon: '🖼️', section: 'icy' },

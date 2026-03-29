@@ -5,11 +5,12 @@ export function renderGeodeticTab(container) {
 
   container.innerHTML = `
     <div class="tab-header">
-      <h2>Geodetic Investigations of the Europa Clipper Mission</h2>
+      <h2>Proving the Ocean Exists (Steinbrügge et al.)</h2>
       <p class="tab-subtitle">
-        Europa Clipper will assess Europa's habitability through geodetic measurements — 
-        global shape, rotation, gravity, and tidal deformation. By measuring the $k_2$ Love number, 
-        we can definitively prove the existence of a subsurface ocean and bound the ice shell thickness.
+        How do we know Europa has an ocean without landing on it? We use <strong>geodesy</strong>: 
+        the measurement of the planet's shape and gravity. By observing how Jupiter's gravity stretches 
+        Europa, we can calculate a value called the <strong>Love number ($k_2$)</strong>. This value 
+        tells us if the outer ice shell is stiff and frozen to the core, or if it's floating freely on a liquid ocean.
       </p>
       <div class="paper-citation">
         📄 <a href="https://doi.org/10.1007/s11214-025-01250-x" target="_blank" rel="noopener">
@@ -20,11 +21,11 @@ export function renderGeodeticTab(container) {
 
     <!-- Interactive Love Number Visualization -->
     <div class="card" style="margin-bottom:20px;">
-      <div class="card-title"><span class="icon">📈</span> Inferred Ice Shell Thickness from $k_2$ Love Number</div>
+      <div class="card-title"><span class="icon">📈</span> Ice Shell Thickness vs. Gravity Response ($k_2$)</div>
       <p style="font-size:12px; color:var(--text-secondary); margin-bottom:15px; line-height:1.5;">
-        A decoupled ice shell floating on a global ocean produces $k_2 \\approx 0.25$. If the ice shell 
-        were frozen solid to the mantle (no ocean), $k_2$ would be tiny ($\\sim 0.02$). Furthermore, the exact value 
-        of $k_2$ is highly sensitive to the thickness of the ice shell.
+        An ice shell floating on a liquid ocean flexes easily, creating a high $k_2$ value ($\\approx 0.25$). 
+        If Europa were frozen solid all the way through, it wouldn't flex much, resulting in a tiny $k_2$ ($\\sim 0.02$). 
+        By measuring this exact number with spacecraft, we can not only prove the ocean is there, but calculate exactly how thick the ice is!
       </p>
 
       <div class="grid-2">

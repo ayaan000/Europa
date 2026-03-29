@@ -1,4 +1,5 @@
 import katex from 'katex';
+import europaMapUrl from '../assets/europa_world_map.png';
 
 export function renderGeologyTab(container) {
   container.innerHTML = `
@@ -87,7 +88,7 @@ export function renderGeologyTab(container) {
     )}
   `;
 
-  // Progressive Clipper Map Logic
+  // Progressive Clipper Map Logic (2D World Map)
   const canvas = document.getElementById('clipper-map-canvas');
   if (canvas) {
     const W = canvas.parentElement.clientWidth;
@@ -96,63 +97,114 @@ export function renderGeologyTab(container) {
     canvas.width = W * dpr; canvas.height = H * dpr;
     canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
     const ctx = canvas.getContext('2d');
-    ctx.scale(dpr, dpr);
     
-    // Background 
-    ctx.fillStyle = '#08121f';
-    ctx.fillRect(0, 0, W, H);
+    // Load high-resolution map
+    const img = new Image();
+    img.src = europaMapUrl;
     
-    // Generate static lineae paths representing the mapping
-    const paths = [];
-    for(let i=0; i<200; i++) {
-        const x = Math.random() * W;
-        const y = Math.random() * H;
-        const a = Math.random() * Math.PI;
-        const len = 30 + Math.random() * 200;
-        paths.push({ x, y, a, len, color: Math.random() > 0.7 ? '#a54432' : '#355c7d', width: 0.5 + Math.random()*2 });
-    }
-
     let time = 0;
     let animId;
+    let imgLoaded = false;
+    img.onload = () => { imgLoaded = true; };
+
+    // Dynamic Drift / Continental Annotations
+    const markers = [
+      { name: 'Conamara Chaos', cx: 0.65, cy: 0.45, type: 'chaos', dx: 0.005, dy: -0.002 },
+      { name: 'Thera Macula (Subsumption)', cx: 0.35, cy: 0.65, type: 'subsumption', dx: -0.008, dy: 0.005 },
+      { name: 'Astypalaea Linea', cx: 0.5, cy: 0.8, type: 'drift', dx: 0.015, dy: 0.0 }
+    ];
+
     function drawMap() {
       if (!document.getElementById('clipper-map-canvas')) return; 
       animId = window.requestAnimationFrame(drawMap);
       time += 0.5;
       
-      const progress = Math.min(100, Math.floor(time * 0.5));
+      const progress = Math.min(100, Math.floor(time * 0.25));
       const progressEl = document.getElementById('clipper-progress');
-      if (progressEl) progressEl.textContent = `Telemetry: ${progress}%`;
+      if (progressEl) progressEl.textContent = `Resolution: ${progress}%`;
       
-      if (progress >= 100) return; // Map complete
-
+      // Base background
       ctx.fillStyle = '#08121f';
-      ctx.fillRect(0, 0, W, H);
-
-      // Noise
-      ctx.fillStyle = 'rgba(255,255,255,0.03)';
-      for(let k=0; k<1500; k++) ctx.fillRect(Math.random()*W, Math.random()*H, 2, 2);
-
-      paths.forEach((p, idx) => {
-         const revealThreshold = (idx / paths.length) * 150;
-         if (time > revealThreshold) {
-            const drawLen = Math.min(p.len, (time - revealThreshold) * 1.5);
-            ctx.beginPath();
-            ctx.moveTo(p.x, p.y);
-            ctx.quadraticCurveTo(p.x + p.len*0.5*Math.cos(p.a) + 30, p.y + p.len*0.5*Math.sin(p.a) - 30, p.x + drawLen*Math.cos(p.a), p.y + drawLen*Math.sin(p.a));
-            ctx.strokeStyle = p.color;
-            ctx.lineWidth = p.width;
-            ctx.stroke();
-
-            // Leading Edge "Laser" Dot
-            if (drawLen < p.len) {
-                ctx.fillStyle = '#00ffff';
-                ctx.beginPath();
-                ctx.arc(p.x + drawLen*Math.cos(p.a), p.y + drawLen*Math.sin(p.a), 1.5, 0, Math.PI*2);
-                ctx.fill();
-            }
-         }
-      });
+      ctx.fillRect(0, 0, W * dpr, H * dpr);
+      
+      if (imgLoaded) {
+          // Progressive pixelation effect: simulate data transmission improving over time
+          const pixelSize = progress >= 100 ? 1 : Math.max(1, 40 - Math.floor(progress / 2.5));
+          
+          if (pixelSize > 1) {
+              // Draw small
+              const tempW = (W * dpr) / pixelSize;
+              const tempH = (H * dpr) / pixelSize;
+              ctx.imageSmoothingEnabled = false;
+              ctx.drawImage(img, 0, 0, tempW, tempH);
+              // Scale up
+              ctx.drawImage(canvas, 0, 0, tempW, tempH, 0, 0, W * dpr, H * dpr);
+              ctx.imageSmoothingEnabled = true;
+          } else {
+              // Draw full res
+              ctx.drawImage(img, 0, 0, W * dpr, H * dpr);
+          }
+          
+          // Add continental drift markers after 50%
+          if (progress > 50) {
+              const alpha = (progress - 50) / 50;
+              ctx.globalAlpha = alpha;
+              
+              markers.forEach((m) => {
+                  const px = (m.cx * W + Math.sin(time * 0.05) * m.dx * W) * dpr;
+                  const py = (m.cy * H + Math.cos(time * 0.05) * m.dy * H) * dpr;
+                  
+                  // Marker Ring
+                  ctx.beginPath();
+                  ctx.strokeStyle = m.type === 'chaos' ? '#ffaa00' : m.type === 'subsumption' ? '#ff0055' : '#00ffff';
+                  ctx.lineWidth = 2 * dpr;
+                  ctx.arc(px, py, 12 * dpr + Math.sin(time*0.1)*3, 0, Math.PI*2);
+                  ctx.stroke();
+                  
+                  // Central Dot
+                  ctx.beginPath();
+                  ctx.fillStyle = ctx.strokeStyle;
+                  ctx.arc(px, py, 3 * dpr, 0, Math.PI*2);
+                  ctx.fill();
+                  
+                  // Label
+                  ctx.font = `600 ${11 * dpr}px "Space Mono", monospace`;
+                  ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+                  ctx.fillText(m.name, px + 18 * dpr, py + 4 * dpr);
+                  
+                  // Velocity / Drift Arrow
+                  ctx.beginPath();
+                  ctx.moveTo(px, py);
+                  ctx.lineTo(px + m.dx * 1500 * dpr, py + m.dy * 1500 * dpr);
+                  ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+                  ctx.lineWidth = 1.5 * dpr;
+                  ctx.stroke();
+                  
+                  // Arrow Tip
+                  ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+                  ctx.beginPath();
+                  ctx.arc(px + m.dx * 1500 * dpr, py + m.dy * 1500 * dpr, 2.5 * dpr, 0, Math.PI*2);
+                  ctx.fill();
+              });
+              
+              ctx.globalAlpha = 1.0;
+          }
+          
+          // Scanline effect during progressive transmission
+          if (progress < 100) {
+              const scanY = (progress / 100) * (H * dpr);
+              ctx.fillStyle = 'rgba(0, 255, 255, 0.5)';
+              ctx.fillRect(0, scanY, W * dpr, 2 * dpr);
+              ctx.fillStyle = 'rgba(0, 255, 255, 0.05)';
+              ctx.fillRect(0, 0, W * dpr, scanY);
+          }
+      } else {
+          ctx.fillStyle = '#00ffff';
+          ctx.font = `${12 * dpr}px monospace`;
+          ctx.fillText("Receiving high-res orbital telemetry...", 20 * dpr, 30 * dpr);
+      }
     }
+    
     drawMap();
     return () => { if (animId) cancelAnimationFrame(animId); };
   }
