@@ -9,7 +9,7 @@ import { renderIceSystemTab } from './tabs/IceSystemTab.js';
 import { renderCombinedClipperTab } from './tabs/CombinedClipperTab.js';
 import { renderGeologyTab } from './tabs/GeologyTab.js';
 import { renderAstrobiologyTab } from './tabs/AstrobiologyTab.js';
-import { renderPosterTab } from './tabs/PosterTab.js';
+import { renderEuropaPosterTab } from './tabs/EuropaPosterTab.js';
 import { renderNasaEyesTab } from './tabs/NasaEyesTab.js';
 import { renderSotinGeodesicTab } from './tabs/SotinGeodesicTab.js';
 import { renderAst320ConvectionTab } from './tabs/Ast320ConvectionTab.js';
@@ -25,7 +25,7 @@ const TABS = {
   sotin:       { render: renderSotinGeodesicTab,label: 'Sotin et al. 2026',            icon: '🎯', section: 'europa' },
   clipper:     { render: renderCombinedClipperTab, label: 'Europa Clipper Mission',    icon: '🛰️', section: 'europa' },
   nasaeyes:    { render: renderNasaEyesTab,    label: 'NASA Eyes Explorer',            icon: '🔭', section: 'europa' },
-  poster:      { render: renderPosterTab,      label: 'Cross Section Poster',          icon: '🖼️', section: 'icy' },
+  poster:      { render: renderEuropaPosterTab,label: 'Cross Section Poster',          icon: '🖼️', section: 'icy' },
 };
 
 let activeTab = 'overview';
