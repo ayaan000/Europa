@@ -165,6 +165,58 @@ export function createEuropaGlobe(container, initialMode = 'surface') {
   scene.add(jovianGroup);
   createJovianSystem(jovianGroup);
 
+  /* ===================== CONVECTION MODE ===================== */
+  const convectionGroup = new THREE.Group();
+  convectionGroup.visible = false;
+  scene.add(convectionGroup);
+
+  // Ocean base layer with a dynamic shader for the fluid
+  const oceanShaderMat = new THREE.ShaderMaterial({
+    uniforms: {
+      time: { value: 0.0 },
+      colorA: { value: new THREE.Color(0x05081a) },
+      colorB: { value: new THREE.Color(0x0a1a4a) },
+      colorC: { value: new THREE.Color(0x00ffff) },
+    },
+    vertexShader: `
+      varying vec2 vUv;
+      void main() {
+        vUv = uv;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      }
+    `,
+    fragmentShader: `
+      varying vec2 vUv;
+      uniform float time;
+      uniform vec3 colorA;
+      uniform vec3 colorB;
+      uniform vec3 colorC;
+      void main() {
+        float noise = sin(vUv.x * 12.0 + time) * cos(vUv.y * 12.0 + time * 0.8);
+        vec3 color = mix(colorA, colorB, vUv.y + noise * 0.1);
+        color = mix(color, colorC, clamp(noise * 0.2, 0.0, 1.0));
+        gl_FragColor = vec4(color, 0.9);
+      }
+    `,
+    transparent: true,
+    side: THREE.FrontSide
+  });
+  convectionGroup.add(new THREE.Mesh(new THREE.SphereGeometry(0.96, 64, 64), oceanShaderMat));
+
+  const convectionTex = generateConvectionTexture();
+  const convectionMat = new THREE.MeshStandardMaterial({
+    map: convectionTex,
+    transparent: true,
+    opacity: 0.75,
+    roughness: 0.6,
+    metalness: 0.4
+  });
+  const convectionShell = new THREE.Mesh(new THREE.SphereGeometry(1.002, 128, 128), convectionMat);
+  convectionGroup.add(convectionShell);
+
+  const plumeGroup = createConvectionPlumes();
+  convectionGroup.add(plumeGroup);
+
   /* ===================== MODE/FILTER MANAGEMENT ===================== */
   let currentMode = initialMode;
   function applyMode(mode) {
@@ -175,6 +227,7 @@ export function createEuropaGlobe(container, initialMode = 'surface') {
     magneticGroup.visible   = (mode === 'magnetic');
     tidalGroup.visible      = (mode === 'tidal');
     mineralGroup.visible    = (mode === 'mineral');
+    convectionGroup.visible = (mode === 'convection');
 
     // Global Jovian Toggles
     if (jovianGroup.userData.jovianBodies) {
@@ -297,6 +350,14 @@ export function createEuropaGlobe(container, initialMode = 'surface') {
       }
     }
 
+    if (currentMode === 'convection') {
+      oceanShaderMat.uniforms.time.value -= 0.005 * timeMultiplier;
+      plumeGroup.rotation.y += 0.001 * timeMultiplier;
+      plumeGroup.children.forEach((p, idx) => {
+        p.rotation.z += 0.005 * timeMultiplier * (idx % 2 === 0 ? 1 : -1);
+      });
+    }
+
     composer.render();
   }
   animate();
@@ -324,6 +385,79 @@ export function createEuropaGlobe(container, initialMode = 'surface') {
       renderer.domElement.remove();
     },
   };
+}
+
+/* ========================================================================== */
+/*                      CONVECTION HELPER FUNCTIONS                         */
+/* ========================================================================== */
+
+function generateConvectionTexture() {
+  const size = 1024;
+  const canvas = document.createElement('canvas');
+  canvas.width = size; canvas.height = size;
+  const ctx = canvas.getContext('2d');
+
+  ctx.fillStyle = '#102040';
+  ctx.fillRect(0,0,size,size);
+
+  // Fractal noise for the thin/thick ice shell
+  for(let i=0; i<400; i++) {
+    const x = Math.random() * size;
+    const y = Math.random() * size;
+    const r = 20 + Math.random() * 80;
+    const grad = ctx.createRadialGradient(x,y,0,x,y,r);
+    grad.addColorStop(0, 'rgba(0, 255, 255, 0.4)');
+    grad.addColorStop(1, 'rgba(0, 255, 255, 0)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(x-r, y-r, r*2, r*2);
+  }
+
+  // Cracks / Lineae matching the heat flux
+  ctx.strokeStyle = 'rgba(255, 100, 0, 0.3)';
+  ctx.lineWidth = 1;
+  for(let i=0; i<100; i++) {
+    ctx.beginPath();
+    ctx.moveTo(Math.random()*size, Math.random()*size);
+    ctx.lineTo(Math.random()*size, Math.random()*size);
+    ctx.stroke();
+  }
+
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+  return tex;
+}
+
+function createConvectionPlumes() {
+  const group = new THREE.Group();
+  const plumeCount = 12;
+  const loader = new THREE.TextureLoader();
+  
+  // Generic glow sprite
+  const plumeTex = loader.load('https://threejs.org/examples/textures/sprites/ball.png');
+
+  for(let i=0; i<plumeCount; i++) {
+    const phi = Math.acos(-1 + (2 * i) / plumeCount);
+    const theta = Math.sqrt(plumeCount * Math.PI) * phi;
+    
+    const spriteMat = new THREE.SpriteMaterial({ 
+      map: plumeTex, 
+      color: 0x00ffff, 
+      transparent: true, 
+      opacity: 0.6,
+      blending: THREE.AdditiveBlending 
+    });
+    const sprite = new THREE.Sprite(spriteMat);
+    
+    const r = 0.98;
+    sprite.position.set(
+      r * Math.sin(phi) * Math.cos(theta),
+      r * Math.sin(phi) * Math.sin(theta),
+      r * Math.cos(phi)
+    );
+    sprite.scale.set(0.1, 0.1, 0.1);
+    group.add(sprite);
+  }
+  return group;
 }
 
 /* ===================== JOVIAN SYSTEM & ARROWS ===================== */

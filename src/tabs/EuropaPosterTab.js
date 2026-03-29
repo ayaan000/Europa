@@ -1,5 +1,5 @@
 export function renderEuropaPosterTab(container) {
-  const baseUrl = '/Europa/'; 
+  const baseUrl = import.meta.env.BASE_URL || '/'; 
   const pdfUrl = `${baseUrl}EuropaPoster.pdf`;
 
   // Store original styles for cleanup

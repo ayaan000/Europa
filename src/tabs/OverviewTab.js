@@ -38,6 +38,13 @@ export function renderOverviewTab(container) {
       physicsTitle: "Radiolytic Processing",
       physicsDesc: "Energetic electrons and ions from Jupiter bombard the surface ice, dissociating water molecules into reactive oxidants that can eventually mix into the ocean.",
       equation: "H_2O \\xrightarrow{e^-, \\, \\gamma} \\text{Radiolytic Products} \\, (O_2, H_2O_2)"
+    },
+    convection: {
+      title: "Ocean Convection (Pagnoscin et al. 2026)",
+      text: "Intermediate-scale turbulent convection in Europa's ocean generates spatially heterogeneous basal heat fluxes. This dictates the thickness variations of the overlying ice shell, creating the chaotic terrain features we observe.",
+      physicsTitle: "Boussinesq Approximation",
+      physicsDesc: "The ocean's buoyancy-driven flow is modeled using the Boussinesq approximation, where density variations are only considered in the buoyancy term.",
+      equation: "\\frac{\\partial \\vec{u}}{\\partial t} + (\\vec{u} \\cdot \\nabla)\\vec{u} = -\\nabla p + \\text{Ra}\\,\\text{Pr}\\,T\\,\\hat{z} + \\text{Pr}\\,\\nabla^2 \\vec{u}"
     }
   };
 
@@ -62,6 +69,7 @@ export function renderOverviewTab(container) {
               <button class="toggle-option" data-mode="magnetic">B-Field</button>
               <button class="toggle-option" data-mode="tidal">Tidal Stress</button>
               <button class="toggle-option" data-mode="mineral">Mineral Map</button>
+              <button class="toggle-option" data-mode="convection">Convection</button>
             </div>
             
             <div style="display:flex; flex-direction:column; gap:8px;">
