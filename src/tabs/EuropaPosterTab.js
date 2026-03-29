@@ -2,28 +2,41 @@ export function renderEuropaPosterTab(container) {
   const baseUrl = '/Europa/'; 
   const pdfUrl = `${baseUrl}EuropaPoster.pdf`;
 
-  container.innerHTML = `
-    <div class="tab-header" style="margin-bottom: 24px; padding: 20px; background: rgba(0, 0, 0, 0.3); border-radius: 12px; border: 1px solid rgba(0, 255, 255, 0.1);">
-      <h2 style="color: var(--accent-primary); margin-bottom: 8px; font-size: 28px;">Europa Cross Section Poster</h2>
-      <p class="tab-subtitle" style="color: var(--text-secondary); font-size: 16px; margin: 0;">
-        A comprehensive look at Europa's fully differentiated interior layers, from the irradiated surface to the metallic iron core.
-      </p>
-    </div>
+  // Store original styles for cleanup
+  const originalPadding = container.style.padding;
+  const originalOverflow = container.style.overflow;
 
-    <div class="card" style="height: calc(100vh - 220px); padding: 0; overflow: hidden; border-radius: 12px; border: 1px solid rgba(0, 255, 255, 0.2); background: #000; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);">
+  // Maximize view
+  container.style.padding = '0';
+  container.style.overflow = 'hidden';
+
+  container.innerHTML = `
+    <div style="width: 100%; height: 100%; background: #000; position: relative; overflow: hidden;">
       <iframe 
         src="${pdfUrl}" 
         width="100%" 
         height="100%" 
-        style="border: none; display: block;"
+        style="border: none; display: block; filter: contrast(1.1) brightness(1.05);"
         title="Europa Cross Section Poster"
       ></iframe>
-    </div>
-    
-    <div style="margin-top: 20px; text-align: center;">
-      <a href="${pdfUrl}" target="_blank" class="toggle-option" style="display: inline-block; padding: 10px 20px; text-decoration: none; background: rgba(0, 255, 255, 0.1); border: 1px solid var(--accent-primary); border-radius: 6px; color: var(--accent-primary); transition: all 0.3s ease;">
-        <span class="icon">↗️</span> Open Poster in New Tab
+      
+      <!-- Floating Action Button for Accessibility -->
+      <a href="${pdfUrl}" target="_blank" 
+         style="position: absolute; bottom: 30px; right: 30px; 
+                padding: 12px 24px; background: rgba(0, 0, 0, 0.75); 
+                border: 1px solid var(--accent-primary); color: var(--accent-primary); 
+                border-radius: 8px; font-family: var(--font-mono); font-size: 13px;
+                text-decoration: none; backdrop-filter: blur(8px);
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5), var(--glow-soft);
+                z-index: 1000; transition: all 0.3s ease; display: block;">
+        <span class="icon">↗️</span> OPEN FULLSCREEN
       </a>
     </div>
   `;
+
+  return () => {
+    container.style.padding = originalPadding;
+    container.style.overflow = originalOverflow;
+  };
 }
+
