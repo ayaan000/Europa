@@ -117,51 +117,7 @@ export function createEuropaGlobe(container, initialMode = 'surface') {
   internalGroup.visible = false;
   scene.add(internalGroup);
 
-  /* ===================== CONVECTION MODE ===================== */
-  const convectionGroup = new THREE.Group();
-  convectionGroup.visible = false;
-  scene.add(convectionGroup);
 
-  // Shell is fully transparent so we can see particles clearly
-  const convShellTex = generateConvectionTexture();
-  const convShellMat = new THREE.MeshStandardMaterial({
-    map: convShellTex, transparent: true, opacity: 0.0, roughness: 0.2, metalness: 0.9,
-  });
-  convectionGroup.add(new THREE.Mesh(new THREE.SphereGeometry(1, 128, 128), convShellMat));
-  const plumeData = createConvectionPlumes();
-  convectionGroup.add(plumeData.points);
-  
-  // Dynamic GLSL Shader for a physically undulating subsurface ocean
-  const oceanShader = {
-    uniforms: { time: { value: 0 } },
-    vertexShader: `
-      varying vec3 vNormal;
-      uniform float time;
-      void main() {
-        vNormal = normal;
-        float displacement = sin(position.x * 12.0 + time) * cos(position.y * 12.0 + time) * sin(position.z * 12.0) * 0.015;
-        vec3 newPosition = position + normal * displacement;
-        gl_Position = projectionMatrix * modelViewMatrix * vec4(newPosition, 1.0);
-      }
-    `,
-    fragmentShader: `
-      varying vec3 vNormal;
-      uniform float time;
-      void main() {
-        float intensity = pow(0.7 - dot(vNormal, vec3(0, 0, 1.0)), 2.0);
-        gl_FragColor = vec4(0.0, 0.8, 1.0, 0.2 + intensity * 0.4);
-      }
-    `
-  };
-  const oceanGlowMat = new THREE.ShaderMaterial({
-    uniforms: oceanShader.uniforms,
-    vertexShader: oceanShader.vertexShader,
-    fragmentShader: oceanShader.fragmentShader,
-    transparent: true,
-    side: THREE.FrontSide,
-    blending: THREE.AdditiveBlending
-  });
-  convectionGroup.add(new THREE.Mesh(new THREE.SphereGeometry(0.88, 128, 128), oceanGlowMat));
 
   /* ===================== MAGNETIC MODE ===================== */
   const magneticGroup = new THREE.Group();
@@ -216,7 +172,6 @@ export function createEuropaGlobe(container, initialMode = 'surface') {
     surfaceMesh.visible     = (mode === 'surface');
     glowMesh.visible        = (mode === 'surface');
     internalGroup.visible   = (mode === 'internal');
-    convectionGroup.visible = (mode === 'convection');
     magneticGroup.visible   = (mode === 'magnetic');
     tidalGroup.visible      = (mode === 'tidal');
     mineralGroup.visible    = (mode === 'mineral');
@@ -287,25 +242,7 @@ export function createEuropaGlobe(container, initialMode = 'surface') {
     const delta = clock.getDelta();
     simulationTime += delta * timeMultiplier;
     
-    // Update Ocean Shader Time
-    if (oceanGlowMat.uniforms) {
-      oceanGlowMat.uniforms.time.value = simulationTime * 2.5;
-    }
-    
     controls.update();
-
-    if (currentMode === 'convection' && plumeData.positions) {
-      const pos = plumeData.positions;
-      for (let i = 0; i < pos.count; i++) {
-        let r = Math.sqrt(pos.getX(i) ** 2 + pos.getY(i) ** 2 + pos.getZ(i) ** 2);
-        r += (0.003 * Math.max(0.1, timeMultiplier));
-        if (r > 0.98) r = 0.55 + Math.random() * 0.1;
-        const theta = Math.atan2(pos.getY(i), Math.sqrt(pos.getX(i) ** 2 + pos.getZ(i) ** 2));
-        const phi   = Math.atan2(pos.getZ(i), pos.getX(i));
-        pos.setXYZ(i, r * Math.cos(theta) * Math.cos(phi), r * Math.sin(theta), r * Math.cos(theta) * Math.sin(phi));
-      }
-      pos.needsUpdate = true;
-    }
 
     if (currentMode === 'magnetic') {
       magneticGroup.children.forEach(child => {
@@ -637,28 +574,7 @@ function generateMineralTexture() {
   const tex = new THREE.CanvasTexture(canvas); tex.wrapS = THREE.RepeatWrapping; tex.wrapT = THREE.ClampToEdgeWrapping; return tex;
 }
 
-function generateConvectionTexture() {
-  const canvas = document.createElement('canvas'); canvas.width = 1024; canvas.height = 512;
-  const ctx = canvas.getContext('2d'); ctx.fillStyle = '#110022'; ctx.fillRect(0, 0, 1024, 512);
-  for (let i = 0; i < 15; i++) {
-    const cx = Math.random() * 1024, cy = 100 + Math.random() * 312, r = 50 + Math.random() * 100;
-    const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
-    grad.addColorStop(0, 'rgba(255, 0, 255, 0.9)'); grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
-    ctx.fillStyle = grad; ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
-  }
-  return new THREE.CanvasTexture(canvas);
-}
 
-function createConvectionPlumes() {
-  const positions = new Float32Array(3000), colors = new Float32Array(3000);
-  for (let i = 0; i < 1000; i++) {
-    const r = 0.55 + Math.random() * 0.4, theta = (Math.random() - 0.5) * 1.2, phi = (Math.floor(i/80)/12)*Math.PI*2 + Math.random()*0.3;
-    positions[i*3] = r*Math.cos(theta)*Math.cos(phi); positions[i*3+1] = r*Math.sin(theta); positions[i*3+2] = r*Math.cos(theta)*Math.sin(phi);
-    colors[i*3] = r>0.75?1:0; colors[i*3+1] = r>0.75?0:1; colors[i*3+2] = 1;
-  }
-  const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.BufferAttribute(positions, 3)); geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-  return { points: new THREE.Points(geo, new THREE.PointsMaterial({ size: 0.04, vertexColors: true, transparent: true, opacity: 1.0, blending: THREE.AdditiveBlending })), positions: geo.attributes.position };
-}
 
 function createMagneticFieldLines(group) {
   // Jovian Dipole is now distinct ORANGE (0xffaa00)

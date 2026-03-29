@@ -18,13 +18,6 @@ export function renderOverviewTab(container) {
       physicsDesc: "The internal structure is maintained by hydrostatic equilibrium, balancing gravitational compression against the material's bulk modulus.",
       equation: "\\frac{dP}{dr} = -\\rho(r) g(r)"
     },
-    convection: {
-      title: "Ocean Convection",
-      text: "Heat escaping from the silicate mantle drives hydrothermal plumes up through the ocean. These turbulent convective currents apply concentrated heat fluxes to the base of the ice shell, potentially thinning it over geological time.",
-      physicsTitle: "Rayleigh Number Criterion",
-      physicsDesc: "Convection initiates when the critical Rayleigh number is exceeded, balancing thermal buoyancy against viscous drag and heat diffusion.",
-      equation: "Ra = \\frac{\\alpha g \\Delta T h^3}{\\kappa \\nu} \\sim 10^{20} \\gg Ra_c"
-    },
     magnetic: {
       title: "Induced Magnetic Field",
       text: "As Jupiter's powerful, rotating magnetic field sweeps past Europa, it induces electrical currents within the moon. The fact that an induced counter-field exists is our strongest evidence for a global, conductive, salty ocean.",
@@ -66,7 +59,6 @@ export function renderOverviewTab(container) {
             <div class="toggle-group" id="globe-toggle" style="flex-wrap:wrap; background:rgba(0,0,0,0.5); backdrop-filter:blur(4px); padding:4px; border-radius:8px; max-width:60%;">
               <button class="toggle-option active" data-mode="surface">Surface</button>
               <button class="toggle-option" data-mode="internal">Layers</button>
-              <button class="toggle-option" data-mode="convection">Convection</button>
               <button class="toggle-option" data-mode="magnetic">B-Field</button>
               <button class="toggle-option" data-mode="tidal">Tidal Stress</button>
               <button class="toggle-option" data-mode="mineral">Mineral Map</button>
