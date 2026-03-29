@@ -7,6 +7,9 @@ export function renderPosterTab(container) {
       </p>
     </div>
 
-    <iframe
+    <!-- PDF Viewer -->
+    <div class="card" style="height: calc(100vh - 200px); padding: 0; overflow: hidden; border: 1px solid rgba(0,255,255,0.2);">
+      <iframe src="/EuropaPoster.pdf" width="100%" height="100%" style="border: none;"></iframe>
+    </div>
   `;
 }
