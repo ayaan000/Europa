@@ -61,7 +61,7 @@ export function renderOverviewTab(container) {
     <div class="grid-2">
       <div class="card" style="margin-bottom: 20px;">
         <div class="card-title"><span class="icon">🌐</span> 3D Interactive Europa Model</div>
-        <div class="three-container" id="globe-container" style="height:550px; position:relative;">
+        <div class="three-container" id="globe-container" style="height:600px; position:relative;">
           <div class="three-overlay" style="top:10px; left:10px; right:10px; display:flex; justify-content:space-between; align-items:flex-start;">
             <div class="toggle-group" id="globe-toggle" style="flex-wrap:wrap; background:rgba(0,0,0,0.5); backdrop-filter:blur(4px); padding:4px; border-radius:8px; max-width:60%;">
               <button class="toggle-option active" data-mode="surface">Surface</button>
@@ -81,9 +81,13 @@ export function renderOverviewTab(container) {
 
               <div style="display:flex; flex-direction:column; gap:4px; background:rgba(0,0,0,0.5); backdrop-filter:blur(4px); padding:6px 10px; border-radius:6px; border:1px solid rgba(255,255,255,0.2);">
                 <label style="color:var(--text-secondary); font-size:10px; font-family:var(--font-mono); text-transform:uppercase;">Simulation Speed <span id="val-speed" style="color:var(--text-primary); float:right;">1.0x</span></label>
-                <input type="range" id="sim-speed" min="0" max="5" step="0.5" value="1.0" style="width:120px;" />
+                <input type="range" id="sim-speed" min="0.1" max="50" step="0.1" value="1.0" style="width:120px;" />
               </div>
             </div>
+          </div>
+          
+          <!-- Dynamic Physics Legend -->
+          <div id="globe-legend" style="position:absolute; bottom:15px; left:15px; background:rgba(0,0,0,0.65); backdrop-filter:blur(4px); padding:8px 12px; border-radius:6px; border:1px solid rgba(255,255,255,0.15); display:none; flex-direction:column; gap:6px;">
           </div>
         </div>
         <p style="font-size:11px; color:var(--text-muted); margin-top:8px; text-align:center;">
@@ -163,6 +167,7 @@ export function renderOverviewTab(container) {
   const toggleGroup = document.getElementById('globe-toggle');
   const titleEl = document.getElementById('mode-title');
   const textEl = document.getElementById('mode-text');
+  const globeLegend = document.getElementById('globe-legend');
 
   // Initial physics render
   document.getElementById('physics-equation').innerHTML = katex.renderToString(
@@ -180,6 +185,30 @@ export function renderOverviewTab(container) {
     // Change 3D mode
     const mode = btn.dataset.mode;
     globe.setMode(mode);
+
+    // Update Legend
+    if (mode === 'magnetic') {
+      globeLegend.style.display = 'flex';
+      globeLegend.innerHTML = `
+        <strong style="font-size:11px; color:#fff; margin-bottom:2px;">B-Field Legend</strong>
+        <div style="font-size:10px; color:#aaa; display:flex; align-items:center; gap:6px;"><span style="color:#ffaa00; font-size:12px;">■</span> Jupiter Primary Dipole</div>
+        <div style="font-size:10px; color:#aaa; display:flex; align-items:center; gap:6px;"><span style="color:#ff00ff; font-size:12px;">■</span> Europa Induced Field</div>
+        <div style="font-size:10px; color:#aaa; display:flex; align-items:center; gap:6px;"><span style="color:#39ff14; font-size:12px;">■</span> Ocean Eddy Currents</div>
+      `;
+    } else if (mode === 'tidal') {
+      globeLegend.style.display = 'flex';
+      globeLegend.innerHTML = `
+        <strong style="font-size:11px; color:#fff; margin-bottom:2px;">Tidal Stress Legend</strong>
+        <div style="font-size:10px; color:#aaa; display:flex; align-items:center; gap:6px;"><span style="color:#ffaa00; font-size:12px;">■</span> Jupiter Primary Pull</div>
+        <div style="font-size:10px; color:#aaa; display:flex; align-items:center; gap:6px;"><span style="color:#ffff00; font-size:12px;">■</span> Io Resonance Pull</div>
+        <div style="font-size:10px; color:#aaa; display:flex; align-items:center; gap:6px;"><span style="color:#8800ff; font-size:12px;">■</span> Ganymede Resonance Pull</div>
+        <div style="font-size:10px; color:#aaa; display:flex; align-items:center; gap:6px;"><span style="color:#ff00aa; font-size:12px;">■</span> High Strain (Bulge Peak)</div>
+        <div style="font-size:10px; color:#fcfc00; display:flex; align-items:center; gap:6px;"><b>→</b> Restoring Force Direction</div>
+      `;
+    } else {
+      globeLegend.style.display = 'none';
+      globeLegend.innerHTML = '';
+    }
 
     // Update context text
     titleEl.textContent = modeContexts[mode].title;

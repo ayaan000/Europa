@@ -3,7 +3,6 @@ import 'katex/dist/katex.min.css';
 import { createSidebar } from './components/Sidebar.js';
 import { createGlossary } from './components/Glossary.js';
 import { renderOverviewTab } from './tabs/OverviewTab.js';
-import { renderOceanTab } from './tabs/OceanTab.js';
 import { renderJupiterTab } from './tabs/JupiterTab.js';
 import { renderGeodeticTab } from './tabs/GeodeticTab.js';
 import { renderIceSystemTab } from './tabs/IceSystemTab.js';
@@ -17,7 +16,6 @@ const TABS = {
   overview:    { render: renderOverviewTab,    label: 'Overview & Constants',          icon: '🌍', section: 'icy' },
   jupiter:     { render: renderJupiterTab,     label: 'Jupiter System & Magneto.',     icon: '🪐', section: 'icy' },
   geology:     { render: renderGeologyTab,     label: 'Surface Mapping & Tectonics',   icon: '🗺️', section: 'icy' },
-  ocean:       { render: renderOceanTab,       label: 'Ocean Convection Theory',      icon: '🌊', section: 'icy' },
   icesystem:   { render: renderIceSystemTab,   label: 'Ice-Ocean System Unit',         icon: '🧊', section: 'icy' },
   astro:       { render: renderAstrobiologyTab,label: 'Astrobiology & Organics',       icon: '🦠', section: 'icy' },
   geodetic:    { render: renderGeodeticTab,    label: 'Steinbrügge et al. 2026',       icon: '📡', section: 'europa' },

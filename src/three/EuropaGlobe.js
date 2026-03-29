@@ -131,9 +131,37 @@ export function createEuropaGlobe(container, initialMode = 'surface') {
   const plumeData = createConvectionPlumes();
   convectionGroup.add(plumeData.points);
   
-  // A subtle inner glow to denote the ocean boundary
-  const oceanGlowMat = new THREE.MeshBasicMaterial({ color: 0x00ffff, transparent: true, opacity: 0.15, side: THREE.FrontSide, blending: THREE.AdditiveBlending });
-  convectionGroup.add(new THREE.Mesh(new THREE.SphereGeometry(0.88, 64, 64), oceanGlowMat));
+  // Dynamic GLSL Shader for a physically undulating subsurface ocean
+  const oceanShader = {
+    uniforms: { time: { value: 0 } },
+    vertexShader: `
+      varying vec3 vNormal;
+      uniform float time;
+      void main() {
+        vNormal = normal;
+        float displacement = sin(position.x * 12.0 + time) * cos(position.y * 12.0 + time) * sin(position.z * 12.0) * 0.015;
+        vec3 newPosition = position + normal * displacement;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(newPosition, 1.0);
+      }
+    `,
+    fragmentShader: `
+      varying vec3 vNormal;
+      uniform float time;
+      void main() {
+        float intensity = pow(0.7 - dot(vNormal, vec3(0, 0, 1.0)), 2.0);
+        gl_FragColor = vec4(0.0, 0.8, 1.0, 0.2 + intensity * 0.4);
+      }
+    `
+  };
+  const oceanGlowMat = new THREE.ShaderMaterial({
+    uniforms: oceanShader.uniforms,
+    vertexShader: oceanShader.vertexShader,
+    fragmentShader: oceanShader.fragmentShader,
+    transparent: true,
+    side: THREE.FrontSide,
+    blending: THREE.AdditiveBlending
+  });
+  convectionGroup.add(new THREE.Mesh(new THREE.SphereGeometry(0.88, 128, 128), oceanGlowMat));
 
   /* ===================== MAGNETIC MODE ===================== */
   const magneticGroup = new THREE.Group();
@@ -157,10 +185,24 @@ export function createEuropaGlobe(container, initialMode = 'surface') {
   const tidalMat = new THREE.MeshStandardMaterial({ map: tidalTex, roughness: 0.4, metalness: 0.4 });
   tidalGroup.add(new THREE.Mesh(new THREE.SphereGeometry(1, 128, 128), tidalMat));
 
-  const bulgeMat = new THREE.MeshBasicMaterial({ color: 0xff00aa, transparent: true, opacity: 0.1, side: THREE.BackSide, blending: THREE.AdditiveBlending });
-  const bulgeMesh = new THREE.Mesh(new THREE.SphereGeometry(1.03, 64, 64), bulgeMat);
+  const bulgeMat = new THREE.MeshBasicMaterial({ color: 0xff00aa, transparent: true, opacity: 0.15, side: THREE.BackSide, blending: THREE.AdditiveBlending });
+  const bulgeMesh = new THREE.Mesh(new THREE.SphereGeometry(1.02, 64, 64), bulgeMat);
   bulgeMesh.scale.set(1.02, 0.99, 1.0);
   tidalGroup.add(bulgeMesh);
+
+  // Flowing force vectors (dots trailing across the surface towards the sub-Jovian point)
+  const vectorGeo = new THREE.BufferGeometry();
+  const vectorPts = [];
+  for(let v=0; v<600; v++) {
+    const r = 1.015;
+    const th = Math.random() * Math.PI * 2;
+    const ph = Math.acos(2*Math.random() - 1);
+    vectorPts.push(new THREE.Vector3(r*Math.sin(ph)*Math.cos(th), r*Math.sin(ph)*Math.sin(th), r*Math.cos(ph)));
+  }
+  vectorGeo.setFromPoints(vectorPts);
+  const vectorMat = new THREE.PointsMaterial({ color: 0xfcfc00, size: 0.02, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending });
+  const vectorMesh = new THREE.Points(vectorGeo, vectorMat);
+  tidalGroup.add(vectorMesh);
 
   /* ===================== JOVIAN SYSTEM (GLOBAL BACKGROUND) ===================== */
   const jovianGroup = new THREE.Group();
@@ -245,6 +287,11 @@ export function createEuropaGlobe(container, initialMode = 'surface') {
     const delta = clock.getDelta();
     simulationTime += delta * timeMultiplier;
     
+    // Update Ocean Shader Time
+    if (oceanGlowMat.uniforms) {
+      oceanGlowMat.uniforms.time.value = simulationTime * 2.5;
+    }
+    
     controls.update();
 
     if (currentMode === 'convection' && plumeData.positions) {
@@ -269,7 +316,33 @@ export function createEuropaGlobe(container, initialMode = 'surface') {
     }
 
     if (currentMode === 'tidal') {
-      bulgeMesh.rotation.y = simulationTime * 0.2;
+      // Exaggerate gravitational bulge pulsing wildly across X-axis based on Laplace resonance (orbital distance)
+      const pulse = 1.05 + Math.sin(simulationTime * 3) * 0.07; 
+      bulgeMesh.scale.set(pulse, 0.98, 0.98);
+
+      // Force vectors flowing towards X
+      if (vectorMesh) {
+         const pos = vectorMesh.geometry.attributes.position;
+         for (let i = 0; i < pos.count; i++) {
+            let x = pos.getX(i); let y = pos.getY(i); let z = pos.getZ(i);
+            
+            x += Math.sign(x) * 0.008 * Math.max(0.1, timeMultiplier);
+            const r = 1.015;
+            const currentR = Math.sqrt(x*x + y*y + z*z);
+            x = (x / currentR) * r; y = (y / currentR) * r; z = (z / currentR) * r;
+            
+            // Respawn particles wrapping back around
+            if (Math.abs(x) > 1.012) {
+                const th = Math.random() * Math.PI * 2;
+                const ph = Math.acos(2*Math.random() - 1);
+                x = r*Math.sin(ph)*Math.cos(th)*0.1; 
+                y = r*Math.sin(ph)*Math.sin(th);
+                z = r*Math.cos(ph);
+            }
+            pos.setXYZ(i, x, y, z);
+         }
+         pos.needsUpdate = true;
+      }
     }
 
     // Always rotate global jovian bodies
@@ -588,7 +661,8 @@ function createConvectionPlumes() {
 }
 
 function createMagneticFieldLines(group) {
-  const mat = new THREE.LineBasicMaterial({ color: 0x00ffff, transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending, linewidth: 2 });
+  // Jovian Dipole is now distinct ORANGE (0xffaa00)
+  const mat = new THREE.LineBasicMaterial({ color: 0xffaa00, transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending, linewidth: 2 });
   for (let i = 0; i < 16; i++) {
     const pts = []; const ba = (i/16)*Math.PI*2;
     for (let t = -2; t <= 2; t+=0.05) pts.push(new THREE.Vector3((0.5+Math.abs(t)*1.3)*Math.cos(ba)*0.4 + t*0.9, (0.5+Math.abs(t)*1.3)*Math.sin(ba)*0.9, Math.sin(ba*0.5)*0.4));

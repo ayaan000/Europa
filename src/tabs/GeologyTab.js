@@ -10,6 +10,17 @@ export function renderGeologyTab(container) {
       </p>
     </div>
 
+    <div class="card" style="margin-bottom:20px;">
+      <div class="card-title" style="text-align:left;"><span class="icon">🛰️</span> Europa Clipper Progressive Surface Map</div>
+      <p style="font-size:12px; color:var(--text-secondary); text-align:left; margin-bottom:10px;">
+        Telemetry feed simulating the high-resolution mapping of Europa's chaotic terrain and tectonic lineae over time.
+      </p>
+      <div class="canvas-container" style="height:350px; border-radius:8px; border:1px solid rgba(0,255,255,0.2); overflow:hidden; position:relative;">
+        <canvas id="clipper-map-canvas"></canvas>
+        <div id="clipper-progress" style="position:absolute; top:10px; right:10px; font-family:'Space Mono', monospace; font-size:12px; color:#00ffff; background:rgba(0,0,0,0.6); padding:4px 8px; border-radius:4px;">Recv: 0%</div>
+      </div>
+    </div>
+
     <div class="grid-2">
       <!-- Left Column: Surface Features -->
       <div>
@@ -75,4 +86,74 @@ export function renderGeologyTab(container) {
       { displayMode: true, throwOnError: false }
     )}
   `;
+
+  // Progressive Clipper Map Logic
+  const canvas = document.getElementById('clipper-map-canvas');
+  if (canvas) {
+    const W = canvas.parentElement.clientWidth;
+    const H = canvas.parentElement.clientHeight;
+    const dpr = Math.min(window.devicePixelRatio, 2);
+    canvas.width = W * dpr; canvas.height = H * dpr;
+    canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+    const ctx = canvas.getContext('2d');
+    ctx.scale(dpr, dpr);
+    
+    // Background 
+    ctx.fillStyle = '#08121f';
+    ctx.fillRect(0, 0, W, H);
+    
+    // Generate static lineae paths representing the mapping
+    const paths = [];
+    for(let i=0; i<200; i++) {
+        const x = Math.random() * W;
+        const y = Math.random() * H;
+        const a = Math.random() * Math.PI;
+        const len = 30 + Math.random() * 200;
+        paths.push({ x, y, a, len, color: Math.random() > 0.7 ? '#a54432' : '#355c7d', width: 0.5 + Math.random()*2 });
+    }
+
+    let time = 0;
+    let animId;
+    function drawMap() {
+      if (!document.getElementById('clipper-map-canvas')) return; 
+      animId = window.requestAnimationFrame(drawMap);
+      time += 0.5;
+      
+      const progress = Math.min(100, Math.floor(time * 0.5));
+      const progressEl = document.getElementById('clipper-progress');
+      if (progressEl) progressEl.textContent = `Telemetry: ${progress}%`;
+      
+      if (progress >= 100) return; // Map complete
+
+      ctx.fillStyle = '#08121f';
+      ctx.fillRect(0, 0, W, H);
+
+      // Noise
+      ctx.fillStyle = 'rgba(255,255,255,0.03)';
+      for(let k=0; k<1500; k++) ctx.fillRect(Math.random()*W, Math.random()*H, 2, 2);
+
+      paths.forEach((p, idx) => {
+         const revealThreshold = (idx / paths.length) * 150;
+         if (time > revealThreshold) {
+            const drawLen = Math.min(p.len, (time - revealThreshold) * 1.5);
+            ctx.beginPath();
+            ctx.moveTo(p.x, p.y);
+            ctx.quadraticCurveTo(p.x + p.len*0.5*Math.cos(p.a) + 30, p.y + p.len*0.5*Math.sin(p.a) - 30, p.x + drawLen*Math.cos(p.a), p.y + drawLen*Math.sin(p.a));
+            ctx.strokeStyle = p.color;
+            ctx.lineWidth = p.width;
+            ctx.stroke();
+
+            // Leading Edge "Laser" Dot
+            if (drawLen < p.len) {
+                ctx.fillStyle = '#00ffff';
+                ctx.beginPath();
+                ctx.arc(p.x + drawLen*Math.cos(p.a), p.y + drawLen*Math.sin(p.a), 1.5, 0, Math.PI*2);
+                ctx.fill();
+            }
+         }
+      });
+    }
+    drawMap();
+    return () => { if (animId) cancelAnimationFrame(animId); };
+  }
 }

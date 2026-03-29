@@ -24,13 +24,13 @@ export function renderJupiterTab(container) {
     <div class="grid-2">
       <div class="card">
         <div class="card-title"><span class="icon">🪐</span> Galilean Orbits & Laplace Resonance</div>
-        <div class="canvas-container" style="height:350px; position:relative;">
+        <div class="canvas-container" style="height:550px; position:relative;">
           <canvas id="orbit-canvas"></canvas>
           <div style="position:absolute; bottom:10px; left:10px; right:10px; background:rgba(0,0,0,0.6); padding:10px; border-radius:6px; backdrop-filter:blur(4px);">
             <div style="display:flex; justify-content:space-between; align-items:center; font-size:11px; margin-bottom:5px;">
-              <span>Orbital Speed: <span id="val-speed" style="color:#00d4ff;">8x</span></span>
+              <span>Orbital Speed: <span id="val-speed" style="color:#00d4ff;">8.0x</span></span>
             </div>
-            <input type="range" id="slider-speed" min="1" max="50" value="8" step="1" style="width:100%;" />
+            <input type="range" id="slider-speed" min="0.1" max="50" value="8" step="0.1" style="width:100%;" />
           </div>
         </div>
         <div style="display:flex; gap:6px; margin-top:10px; font-size:10px; flex-wrap:wrap;">
@@ -141,14 +141,14 @@ function animateOrbits(getSpeed) {
   const rect = canvas.parentElement.getBoundingClientRect();
   const dpr = Math.min(window.devicePixelRatio, 2);
   canvas.width = rect.width * dpr;
-  canvas.height = 350 * dpr;
+  canvas.height = 450 * dpr;
   canvas.style.width = rect.width + 'px';
-  canvas.style.height = '350px';
+  canvas.style.height = '450px';
   const ctx = canvas.getContext('2d');
   ctx.scale(dpr, dpr);
 
   const W = rect.width;
-  const H = 350;
+  const H = 450;
   const cx = W / 2;
   const cy = H / 2;
 
@@ -176,6 +176,20 @@ function animateOrbits(getSpeed) {
     ctx.clearRect(0, 0, W, H);
     ctx.fillStyle = '#040810';
     ctx.fillRect(0, 0, W, H);
+
+    // Jupiter Radiation Belts (Red/Orange glow)
+    ctx.beginPath();
+    ctx.arc(cx, cy, 2.0 * scale, 0, Math.PI * 2);
+    ctx.strokeStyle = `rgba(255, 60, 0, ${0.1 + Math.sin(timeAggregator*5)*0.02})`;
+    ctx.lineWidth = 1.0 * scale;
+    ctx.stroke();
+
+    // Io Plasma Torus (Sulfur/Oxygen ionized gas)
+    ctx.beginPath();
+    ctx.arc(cx, cy, 1.0 * scale, 0, Math.PI * 2);
+    ctx.strokeStyle = `rgba(255, 255, 0, ${0.2 + Math.sin(timeAggregator*8)*0.05})`;
+    ctx.lineWidth = 0.3 * scale;
+    ctx.stroke();
 
     // Jupiter
     const jupGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, 18);
@@ -229,6 +243,16 @@ function animateOrbits(getSpeed) {
       ctx.beginPath(); 
       ctx.moveTo(cx + 1.59*scale*Math.cos(euAngle), cy + 1.59*scale*Math.sin(euAngle));
       ctx.lineTo(cx + 2.53*scale*Math.cos(gaAngle), cy + 2.53*scale*Math.sin(gaAngle));
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)'; ctx.setLineDash([4, 4]); ctx.stroke(); ctx.setLineDash([]);
+    }
+
+    // Ganymede-Callisto Conjunction (Not a true Laplace resonance, but explicitly added per user request)
+    const caAngle = (2 * Math.PI * timeAggregator) / 16.69;
+    const diff3 = Math.abs(((gaAngle - caAngle) % (Math.PI*2) + Math.PI*2) % (Math.PI*2));
+    if (diff3 < 0.2 || diff3 > Math.PI*2 - 0.2) {
+      ctx.beginPath(); 
+      ctx.moveTo(cx + 2.53*scale*Math.cos(gaAngle), cy + 2.53*scale*Math.sin(gaAngle));
+      ctx.lineTo(cx + 4.46*scale*Math.cos(caAngle), cy + 4.46*scale*Math.sin(caAngle));
       ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)'; ctx.setLineDash([4, 4]); ctx.stroke(); ctx.setLineDash([]);
     }
   }
